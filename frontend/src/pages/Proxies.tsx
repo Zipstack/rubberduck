@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { PlusIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import type { Proxy } from '../types';
 import ProxyCard from '../components/ProxyCard';
+import ProxyConfigModal from '../components/ProxyConfigModal';
 import { apiClient, ApiError } from '../utils/api';
 
 const Proxies: React.FC = () => {
@@ -9,12 +10,34 @@ const Proxies: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showConfigModal, setShowConfigModal] = useState(false);
+  const [selectedProxy, setSelectedProxy] = useState<Proxy | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Create proxy form state
+  const [providers, setProviders] = useState<string[]>([]);
+  const [isCreating, setIsCreating] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    provider: '',
+    description: '',
+    port: ''
+  });
 
   useEffect(() => {
     loadProxies();
+    loadProviders();
   }, []);
+
+  const loadProviders = async () => {
+    try {
+      const data = await apiClient.getProviders();
+      setProviders(data.providers);
+    } catch (error) {
+      console.error('Failed to load providers:', error);
+    }
+  };
 
   const loadProxies = async () => {
     setIsLoading(true);
@@ -37,7 +60,7 @@ const Proxies: React.FC = () => {
   const filteredProxies = proxies.filter(proxy => {
     const matchesSearch = proxy.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          proxy.provider.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         proxy.model_name.toLowerCase().includes(searchTerm.toLowerCase());
+                         (proxy.description || '').toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesStatus = selectedStatus === 'all' || proxy.status === selectedStatus;
     
@@ -69,8 +92,8 @@ const Proxies: React.FC = () => {
   };
 
   const handleConfigureProxy = (proxy: Proxy) => {
-    console.log('Configure proxy:', proxy);
-    // This will open the configuration modal
+    setSelectedProxy(proxy);
+    setShowConfigModal(true);
   };
 
   const handleDeleteProxy = async (id: number) => {
@@ -84,6 +107,63 @@ const Proxies: React.FC = () => {
           alert(`Failed to delete proxy: ${error.message}`);
         }
       }
+    }
+  };
+
+  const handleOpenCreateModal = () => {
+    setFormData({
+      name: '',
+      provider: providers[0] || '',
+      description: '',
+      port: ''
+    });
+    setShowCreateModal(true);
+  };
+
+  const handleCloseCreateModal = () => {
+    setShowCreateModal(false);
+    setFormData({
+      name: '',
+      provider: '',
+      description: '',
+      port: ''
+    });
+  };
+
+  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleCreateProxy = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsCreating(true);
+
+    try {
+      const proxyData: any = {
+        name: formData.name,
+        provider: formData.provider,
+        description: formData.description
+      };
+
+      // Only include port if provided
+      if (formData.port && formData.port.trim()) {
+        proxyData.port = parseInt(formData.port);
+      }
+
+      await apiClient.createProxy(proxyData);
+      await loadProxies(); // Refresh the list
+      handleCloseCreateModal();
+    } catch (error) {
+      console.error('Failed to create proxy:', error);
+      if (error instanceof ApiError) {
+        alert(`Failed to create proxy: ${error.message}`);
+      }
+    } finally {
+      setIsCreating(false);
     }
   };
 
@@ -101,7 +181,7 @@ const Proxies: React.FC = () => {
           </p>
         </div>
         <button
-          onClick={() => setShowCreateModal(true)}
+          onClick={handleOpenCreateModal}
           className="btn-primary flex items-center space-x-2"
         >
           <PlusIcon className="h-5 w-5" />
@@ -200,7 +280,7 @@ const Proxies: React.FC = () => {
           </p>
           {!searchTerm && selectedStatus === 'all' && (
             <button
-              onClick={() => setShowCreateModal(true)}
+              onClick={handleOpenCreateModal}
               className="btn-primary"
             >
               Create Your First Proxy
@@ -222,28 +302,140 @@ const Proxies: React.FC = () => {
         </div>
       )}
 
-      {/* Create Proxy Modal Placeholder */}
+      {/* Create Proxy Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h2 className="text-lg font-semibold mb-4">Create New Proxy</h2>
-            <p className="text-gray-600 mb-4">Proxy creation form will be implemented here.</p>
-            <div className="flex space-x-3">
-              <button
-                onClick={() => setShowCreateModal(false)}
-                className="btn-secondary flex-1"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => setShowCreateModal(false)}
-                className="btn-primary flex-1"
-              >
-                Create
-              </button>
-            </div>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <form onSubmit={handleCreateProxy}>
+              {/* Modal Header */}
+              <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                <h2 className="text-lg font-semibold text-gray-900">Create New Proxy</h2>
+                <button
+                  type="button"
+                  onClick={handleCloseCreateModal}
+                  className="text-gray-400 hover:text-gray-500"
+                >
+                  <XMarkIcon className="h-6 w-6" />
+                </button>
+              </div>
+
+              {/* Modal Body */}
+              <div className="p-6 space-y-4">
+                {/* Proxy Name */}
+                <div>
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                    Proxy Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleFormChange}
+                    required
+                    className="input-field"
+                    placeholder="e.g., My OpenAI Proxy"
+                  />
+                </div>
+
+                {/* Provider */}
+                <div>
+                  <label htmlFor="provider" className="block text-sm font-medium text-gray-700 mb-1">
+                    Provider <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    id="provider"
+                    name="provider"
+                    value={formData.provider}
+                    onChange={handleFormChange}
+                    required
+                    className="input-field"
+                  >
+                    <option value="">Select a provider</option>
+                    {providers.map((provider) => (
+                      <option key={provider} value={provider}>
+                        {provider.charAt(0).toUpperCase() + provider.slice(1)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+
+                {/* Port (Optional) */}
+                <div>
+                  <label htmlFor="port" className="block text-sm font-medium text-gray-700 mb-1">
+                    Port (Optional)
+                  </label>
+                  <input
+                    type="number"
+                    id="port"
+                    name="port"
+                    value={formData.port}
+                    onChange={handleFormChange}
+                    min="1024"
+                    max="65535"
+                    className="input-field"
+                    placeholder="Auto-assigned if not specified"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Leave empty to auto-assign an available port.
+                  </p>
+                </div>
+
+                {/* Description */}
+                <div>
+                  <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+                    Description (Optional)
+                  </label>
+                  <textarea
+                    id="description"
+                    name="description"
+                    value={formData.description}
+                    onChange={handleFormChange}
+                    rows={3}
+                    className="input-field"
+                    placeholder="Describe this proxy's purpose or configuration..."
+                  />
+                </div>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="flex items-center justify-end space-x-3 p-6 border-t border-gray-200">
+                <button
+                  type="button"
+                  onClick={handleCloseCreateModal}
+                  disabled={isCreating}
+                  className="btn-secondary"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isCreating || !formData.name || !formData.provider}
+                  className="btn-primary flex items-center space-x-2"
+                >
+                  {isCreating && (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  )}
+                  <span>{isCreating ? 'Creating...' : 'Create Proxy'}</span>
+                </button>
+              </div>
+            </form>
           </div>
         </div>
+      )}
+
+      {/* Configuration Modal */}
+      {selectedProxy && (
+        <ProxyConfigModal
+          proxy={selectedProxy}
+          isOpen={showConfigModal}
+          onClose={() => {
+            setShowConfigModal(false);
+            setSelectedProxy(null);
+          }}
+          onUpdate={loadProxies}
+        />
       )}
     </div>
   );

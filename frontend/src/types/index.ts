@@ -9,7 +9,6 @@ export interface Proxy {
   id: number;
   name: string;
   provider: string;
-  model_name: string;
   description?: string;
   tags?: string[];
   port: number;

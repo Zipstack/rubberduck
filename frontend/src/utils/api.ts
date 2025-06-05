@@ -113,13 +113,13 @@ class ApiClient {
 
   // Proxy endpoints
   async getProxies() {
-    return this.request<any[]>('/proxies');
+    const response = await this.request<{proxies: any[]}>('/proxies');
+    return response.proxies;
   }
 
   async createProxy(proxyData: {
     name: string;
     provider: string;
-    model_name: string;
     description?: string;
     port?: number;
   }) {
@@ -145,6 +145,10 @@ class ApiClient {
     return this.request<any>(`/proxies/${proxyId}`, {
       method: 'DELETE',
     });
+  }
+
+  async getProviders() {
+    return this.request<{providers: string[]}>('/providers');
   }
 
   async getProxyFailureConfig(proxyId: number) {
@@ -189,7 +193,8 @@ class ApiClient {
     const queryString = params.toString();
     const endpoint = queryString ? `/logs?${queryString}` : '/logs';
     
-    return this.request<any[]>(endpoint);
+    const response = await this.request<{logs: any[], total_count: number, limit: number, offset: number}>(endpoint);
+    return response.logs;
   }
 
   async exportLogs(format: 'csv' | 'json', filters?: any) {

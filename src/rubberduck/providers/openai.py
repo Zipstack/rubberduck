@@ -70,8 +70,11 @@ class OpenAIProvider(BaseProvider):
         elif "Authorization" in headers:
             api_headers["Authorization"] = headers["Authorization"]
         
-        # Construct full URL
-        url = f"{self.base_url}{endpoint}"
+        # Construct full URL - base_url already includes /v1
+        if endpoint.startswith("/v1"):
+            url = f"{self.base_url}{endpoint[3:]}"  # Remove /v1 prefix since base_url includes it
+        else:
+            url = f"{self.base_url}{endpoint}"
         
         # Make request to OpenAI API
         async with httpx.AsyncClient() as client:
@@ -115,18 +118,18 @@ class OpenAIProvider(BaseProvider):
         Get list of supported OpenAI API endpoints.
         """
         return [
-            "/chat/completions",
-            "/completions", 
-            "/embeddings",
-            "/models",
-            "/images/generations",
-            "/images/edits",
-            "/images/variations",
-            "/audio/transcriptions",
-            "/audio/translations",
-            "/files",
-            "/fine_tuning/jobs",
-            "/moderations"
+            "/v1/chat/completions",
+            "/v1/completions", 
+            "/v1/embeddings",
+            "/v1/models",
+            "/v1/images/generations",
+            "/v1/images/edits",
+            "/v1/images/variations",
+            "/v1/audio/transcriptions",
+            "/v1/audio/translations",
+            "/v1/files",
+            "/v1/fine_tuning/jobs",
+            "/v1/moderations"
         ]
     
     def transform_error_response(self, error_response: Dict[str, Any], status_code: int) -> Dict[str, Any]:

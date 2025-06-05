@@ -58,8 +58,8 @@ const ProxyCard: React.FC<ProxyCardProps> = ({
           <div className="text-2xl">{getProviderIcon(proxy.provider)}</div>
           <div>
             <h3 className="text-lg font-semibold text-gray-900">{proxy.name}</h3>
-            <p className="text-sm text-gray-500">
-              {proxy.provider} • {proxy.model_name}
+            <p className="text-sm text-gray-500 capitalize">
+              {proxy.provider}
             </p>
             {proxy.description && (
               <p className="text-sm text-gray-600 mt-1">{proxy.description}</p>

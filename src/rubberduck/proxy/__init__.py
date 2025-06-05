@@ -41,8 +41,8 @@ class ProxyManager:
             RuntimeError: If no available port found
         """
         # Check database for existing port assignments
-        from database import SessionLocal
-        from models import Proxy
+        from ..database import SessionLocal
+        from ..models import Proxy
         
         db = SessionLocal()
         try:

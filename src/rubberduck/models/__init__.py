@@ -53,7 +53,6 @@ class Proxy(Base):
     status = Column(String, default="stopped")  # running, stopped, error
     user_id = Column(GUID(), ForeignKey("users.id"), nullable=False)
     provider = Column(String, nullable=False)  # openai, anthropic, etc.
-    model_name = Column(String, nullable=False)
     description = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     

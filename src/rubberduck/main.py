@@ -3,6 +3,7 @@ import io
 from datetime import datetime, timedelta
 from typing import Optional, List
 from fastapi import FastAPI, Depends, HTTPException, Query
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response, StreamingResponse
 from .auth import auth_backend, fastapi_users, current_active_user
 from .models import User, Proxy, LogEntry
@@ -17,6 +18,20 @@ from sqlalchemy import and_, desc
 
 app = FastAPI(title="Rubberduck", version="0.1.0")
 
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",  # Frontend development server
+        "http://127.0.0.1:5173",
+        "http://localhost:3000",  # Alternative frontend port
+        "http://127.0.0.1:3000",
+    ],
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["*"],
+)
+
 app.include_router(
     fastapi_users.get_auth_router(auth_backend), prefix="/auth/jwt", tags=["auth"]
 )
@@ -24,6 +39,11 @@ app.include_router(
     fastapi_users.get_register_router(UserRead, UserCreate),
     prefix="/auth",
     tags=["auth"],
+)
+app.include_router(
+    fastapi_users.get_users_router(UserRead, UserCreate),
+    prefix="/users",
+    tags=["users"],
 )
 
 # Social login stubs - to be implemented when social providers are configured
@@ -62,7 +82,6 @@ async def create_proxy(
     proxy = Proxy(
         name=proxy_data["name"],
         provider=proxy_data["provider"],
-        model_name=proxy_data["model_name"],
         description=proxy_data.get("description", ""),
         user_id=user.id,
         status="stopped"
@@ -76,7 +95,6 @@ async def create_proxy(
         "id": proxy.id,
         "name": proxy.name,
         "provider": proxy.provider,
-        "model_name": proxy.model_name,
         "status": proxy.status,
         "port": proxy.port
     }
@@ -95,7 +113,6 @@ async def list_proxies(
             "id": proxy.id,
             "name": proxy.name,
             "provider": proxy.provider,
-            "model_name": proxy.model_name,
             "status": proxy.status,
             "port": proxy.port,
             "description": proxy.description
@@ -148,6 +165,34 @@ async def stop_proxy(
     # Stop the proxy
     status = stop_proxy_for_id(proxy_id)
     return status
+
+@app.delete("/proxies/{proxy_id}")
+async def delete_proxy(
+    proxy_id: int,
+    user: User = Depends(current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Delete a proxy instance."""
+    # Verify proxy belongs to user
+    proxy = db.query(Proxy).filter(
+        Proxy.id == proxy_id, 
+        Proxy.user_id == user.id
+    ).first()
+    
+    if not proxy:
+        raise HTTPException(status_code=404, detail="Proxy not found")
+    
+    # Stop the proxy if it's running
+    try:
+        stop_proxy_for_id(proxy_id)
+    except:
+        pass  # Ignore errors if proxy is already stopped
+    
+    # Delete from database
+    db.delete(proxy)
+    db.commit()
+    
+    return {"message": f"Proxy {proxy_id} deleted successfully"}
 
 @app.get("/providers")
 async def get_providers():

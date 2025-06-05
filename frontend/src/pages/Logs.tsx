@@ -49,8 +49,8 @@ const Logs: React.FC = () => {
 
   const filteredLogs = logs.filter(log => {
     const matchesSearch = 
-      log.ip_address.includes(searchTerm) ||
-      log.prompt_hash.includes(searchTerm) ||
+      (log.ip_address || '').includes(searchTerm) ||
+      (log.prompt_hash || '').includes(searchTerm) ||
       log.proxy_id.toString().includes(searchTerm);
     
     const matchesStatus = statusFilter === 'all' || 
