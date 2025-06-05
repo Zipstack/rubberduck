@@ -1,0 +1,12 @@
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+sqlalchemy>=2.0.0,<2.1.0
+alembic==1.12.1
+pytest==7.4.3
+pytest-asyncio==0.21.1
+httpx==0.25.2
+fastapi-users[sqlalchemy]==12.1.2
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.6
+aiosqlite==0.19.0

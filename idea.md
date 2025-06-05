@@ -37,7 +37,7 @@ I want to build a LLM caching proxy server that emulates popular LLMs with the a
 ## Implementation
 
 - The proxy server will be implemented in Python + FastAPI.
-- The UI will be implemented using React + Shadcn UI.
+- The UI will be implemented using React + Tailwind UI.
 - The database will be implemented using SQLite.
 - Each LLM provider will have its own, modular implementation.
 - Rubberduck authentication:
