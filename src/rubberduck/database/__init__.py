@@ -2,8 +2,17 @@ from sqlalchemy import create_engine, MetaData
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
-SQLALCHEMY_DATABASE_URL = "sqlite:///./rubberduck.db"
-SQLALCHEMY_ASYNC_DATABASE_URL = "sqlite+aiosqlite:///./rubberduck.db"
+import os
+
+# Get the project root directory (parent of src)
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+DATA_DIR = os.path.join(PROJECT_ROOT, "data")
+
+# Ensure data directory exists
+os.makedirs(DATA_DIR, exist_ok=True)
+
+SQLALCHEMY_DATABASE_URL = f"sqlite:///{os.path.join(DATA_DIR, 'rubberduck.db')}"
+SQLALCHEMY_ASYNC_DATABASE_URL = f"sqlite+aiosqlite:///{os.path.join(DATA_DIR, 'rubberduck.db')}"
 
 # Sync engine for regular operations
 engine = create_engine(

@@ -1,8 +1,8 @@
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from database import Base
-from models import User, Proxy, LogEntry
+from rubberduck.database import Base
+from rubberduck.models import User, Proxy, LogEntry
 from datetime import datetime
 
 # Test database setup

@@ -9,7 +9,13 @@ from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
-from models import GUID
+import sys
+import os
+
+# Add the src directory to the Python path
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'src'))
+
+from rubberduck.models import GUID
 
 
 # revision identifiers, used by Alembic.

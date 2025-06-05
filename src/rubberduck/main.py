@@ -4,14 +4,14 @@ from datetime import datetime, timedelta
 from typing import Optional, List
 from fastapi import FastAPI, Depends, HTTPException, Query
 from fastapi.responses import Response, StreamingResponse
-from auth import auth_backend, fastapi_users, current_active_user
-from models import User, Proxy, LogEntry
-from schemas import UserRead, UserCreate
-from database import get_db
-from proxy_engine import start_proxy_for_id, stop_proxy_for_id, proxy_manager
-from providers import list_providers
-from cache_system import cache_manager
-from failure_simulation import FailureConfig, create_default_failure_config
+from .auth import auth_backend, fastapi_users, current_active_user
+from .models import User, Proxy, LogEntry
+from .models.schemas import UserRead, UserCreate
+from .database import get_db
+from .proxy import start_proxy_for_id, stop_proxy_for_id, proxy_manager
+from .providers import list_providers
+from .cache import cache_manager
+from .failure import FailureConfig, create_default_failure_config
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, desc
 

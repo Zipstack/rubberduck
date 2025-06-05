@@ -8,12 +8,12 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 import uvicorn
 
-from database import get_db, SessionLocal
-from models import Proxy
-from providers import get_provider, list_providers
-from cache_system import cache_manager
-from failure_simulation import FailureConfig, failure_simulator
-from logging_middleware import log_proxy_request
+from ..database import get_db, SessionLocal
+from ..models import Proxy
+from ..providers import get_provider, list_providers
+from ..cache import cache_manager
+from ..failure import FailureConfig, failure_simulator
+from ..logging import log_proxy_request
 
 
 class ProxyManager:

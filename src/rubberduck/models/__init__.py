@@ -4,7 +4,7 @@ from sqlalchemy.types import TypeDecorator, CHAR
 from sqlalchemy.dialects.postgresql import UUID as PostgresUUID
 import uuid
 from datetime import datetime
-from database import Base
+from ..database import Base
 from fastapi_users.db import SQLAlchemyBaseUserTableUUID
 
 # SQLite-compatible UUID type

@@ -16,7 +16,13 @@ if config.config_file_name is not None:
 
 # add your model's MetaData object here
 # for 'autogenerate' support
-from models import Base
+import sys
+import os
+
+# Add the src directory to the Python path
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(__file__)), 'src'))
+
+from rubberduck.models import Base
 target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,

@@ -7,8 +7,8 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from datetime import datetime
 
-from database import SessionLocal
-from models import LogEntry
+from ..database import SessionLocal
+from ..models import LogEntry
 
 
 class LoggingMiddleware:

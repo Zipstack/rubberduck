@@ -4,9 +4,9 @@ from typing import Dict, Any, Optional, Tuple
 from datetime import datetime
 from sqlalchemy.orm import Session
 
-from database import SessionLocal
-from models import CacheEntry, Proxy
-from providers import get_provider
+from ..database import SessionLocal
+from ..models import CacheEntry, Proxy
+from ..providers import get_provider
 
 
 class CacheManager:
