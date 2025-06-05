@@ -44,9 +44,9 @@ const ProxyCard: React.FC<ProxyCardProps> = ({
     const icons: Record<string, string> = {
       openai: '🤖',
       anthropic: '🧠',
-      google: '🔍',
-      azure: '☁️',
-      aws: '🟠',
+      azure_openai: '☁️',
+      bedrock: '🟠',
+      vertex_ai: '🔍',
     };
     return icons[provider.toLowerCase()] || '🔧';
   };

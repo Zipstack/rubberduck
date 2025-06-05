@@ -13,10 +13,101 @@ from .proxy import start_proxy_for_id, stop_proxy_for_id, proxy_manager
 from .providers import list_providers
 from .cache import cache_manager
 from .failure import FailureConfig, create_default_failure_config
+from .database import SessionLocal
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, desc
+from sqlalchemy import and_, desc, func
+import logging
 
 app = FastAPI(title="Rubberduck", version="0.1.0")
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+@app.on_event("startup")
+async def startup_event():
+    """
+    Startup event handler that restarts any proxies that were left in running state.
+    This ensures proxy continuity across application restarts.
+    """
+    logger.info("Starting up Rubberduck application...")
+    
+    # Query database for proxies that were left in running state
+    db = SessionLocal()
+    try:
+        running_proxies = db.query(Proxy).filter(Proxy.status == "running").all()
+        
+        if running_proxies:
+            logger.info(f"Found {len(running_proxies)} proxies that were left in running state")
+            
+            for proxy in running_proxies:
+                try:
+                    logger.info(f"Restarting proxy {proxy.id} ({proxy.name}) for provider {proxy.provider}")
+                    
+                    # Start the proxy using the existing function
+                    # Note: This will automatically update the database status and port
+                    status = start_proxy_for_id(proxy.id)
+                    logger.info(f"Successfully restarted proxy {proxy.id} on port {status.get('port')}")
+                    
+                except Exception as e:
+                    logger.error(f"Failed to restart proxy {proxy.id} ({proxy.name}): {str(e)}")
+                    # Mark proxy as stopped if restart failed
+                    try:
+                        proxy.status = "stopped"
+                        db.commit()
+                    except Exception as db_error:
+                        logger.error(f"Failed to update proxy {proxy.id} status to stopped: {str(db_error)}")
+                        db.rollback()
+        else:
+            logger.info("No proxies found in running state - no restart needed")
+            
+    except Exception as e:
+        logger.error(f"Error during proxy startup: {str(e)}")
+    finally:
+        db.close()
+    
+    logger.info("Rubberduck application startup complete")
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """
+    Shutdown event handler to gracefully stop all running proxies.
+    This ensures clean shutdown and proper database state.
+    """
+    logger.info("Shutting down Rubberduck application...")
+    
+    # Get all active proxies from the proxy manager
+    active_proxies = proxy_manager.list_active_proxies()
+    
+    if active_proxies:
+        logger.info(f"Gracefully stopping {len(active_proxies)} active proxies")
+        
+        db = SessionLocal()
+        try:
+            for proxy_info in active_proxies:
+                proxy_id = proxy_info["proxy_id"]
+                try:
+                    logger.info(f"Stopping proxy {proxy_id}")
+                    proxy_manager.stop_proxy(proxy_id)
+                    
+                    # Update database status
+                    proxy = db.query(Proxy).filter(Proxy.id == proxy_id).first()
+                    if proxy:
+                        proxy.status = "stopped"
+                        db.commit()
+                        logger.info(f"Stopped proxy {proxy_id} and updated database")
+                        
+                except Exception as e:
+                    logger.error(f"Error stopping proxy {proxy_id}: {str(e)}")
+                    
+        except Exception as e:
+            logger.error(f"Error during proxy shutdown: {str(e)}")
+        finally:
+            db.close()
+    else:
+        logger.info("No active proxies to stop")
+    
+    logger.info("Rubberduck application shutdown complete")
 
 # Add CORS middleware
 app.add_middleware(
@@ -54,6 +145,152 @@ async def google_login():
 @app.get("/auth/github")
 async def github_login():
     return {"message": "GitHub OAuth not yet configured"}
+
+@app.get("/dashboard/metrics")
+async def get_dashboard_metrics(
+    user: User = Depends(current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Get real-time dashboard metrics for the current user."""
+    try:
+        # Get user's proxies
+        user_proxies = db.query(Proxy).filter(Proxy.user_id == user.id).all()
+        
+        # Calculate basic proxy stats
+        total_proxies = len(user_proxies)
+        running_proxies = len([p for p in user_proxies if p.status == "running"])
+        stopped_proxies = total_proxies - running_proxies
+        
+        # Get proxy IDs for filtering logs
+        proxy_ids = [p.id for p in user_proxies]
+        
+        # Calculate time ranges
+        now = datetime.utcnow()
+        last_24h = now - timedelta(hours=24)
+        last_hour = now - timedelta(hours=1)
+        
+        # Query recent logs for metrics
+        recent_logs_query = db.query(LogEntry).filter(
+            LogEntry.proxy_id.in_(proxy_ids),
+            LogEntry.timestamp >= last_24h
+        )
+        recent_logs = recent_logs_query.all()
+        
+        # Calculate cache hit rate
+        if recent_logs:
+            cache_hits = len([log for log in recent_logs if log.cache_hit])
+            cache_hit_rate = (cache_hits / len(recent_logs)) * 100
+        else:
+            cache_hit_rate = 0.0
+        
+        # Calculate error rate
+        if recent_logs:
+            errors = len([log for log in recent_logs if log.status_code >= 400])
+            error_rate = (errors / len(recent_logs)) * 100
+        else:
+            error_rate = 0.0
+        
+        # Calculate RPM (requests in the last hour)
+        recent_hour_logs = [log for log in recent_logs if log.timestamp >= last_hour]
+        total_rpm = len(recent_hour_logs)
+        
+        # Calculate total cost (sum of cost field where available)
+        total_cost = sum([log.cost for log in recent_logs if log.cost is not None])
+        
+        # Get in-flight requests from proxy manager
+        active_proxies = proxy_manager.list_active_proxies()
+        in_flight_requests = len(active_proxies)  # Simplified metric
+        
+        return {
+            "total_proxies": total_proxies,
+            "running_proxies": running_proxies,
+            "stopped_proxies": stopped_proxies,
+            "cache_hit_rate": round(cache_hit_rate, 1),
+            "error_rate": round(error_rate, 1),
+            "total_rpm": total_rpm,
+            "total_cost": round(total_cost, 2),
+            "in_flight_requests": in_flight_requests,
+            "last_updated": now.isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error calculating dashboard metrics: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to calculate metrics")
+
+@app.get("/dashboard/recent-activity")
+async def get_recent_activity(
+    user: User = Depends(current_active_user),
+    db: Session = Depends(get_db),
+    limit: int = Query(10, description="Number of recent log entries to return")
+):
+    """Get recent activity logs for dashboard."""
+    try:
+        # Get user's proxy IDs
+        user_proxy_ids = [proxy.id for proxy in db.query(Proxy).filter(Proxy.user_id == user.id).all()]
+        
+        if not user_proxy_ids:
+            return {"logs": []}
+        
+        # Query recent logs
+        recent_logs = db.query(LogEntry).filter(
+            LogEntry.proxy_id.in_(user_proxy_ids)
+        ).order_by(desc(LogEntry.timestamp)).limit(limit).all()
+        
+        # Format logs for dashboard
+        formatted_logs = []
+        for log in recent_logs:
+            # Get proxy name
+            proxy = db.query(Proxy).filter(Proxy.id == log.proxy_id).first()
+            proxy_name = proxy.name if proxy else f"Proxy {log.proxy_id}"
+            
+            # Determine event type
+            if log.failure_type:
+                event = f"Failure: {log.failure_type}"
+                status = "error"
+            elif log.cache_hit:
+                event = "Cache hit"
+                status = "success"
+            elif log.status_code >= 400:
+                event = f"Error {log.status_code}"
+                status = "error"
+            elif log.status_code >= 200:
+                event = "Request completed"
+                status = "success"
+            else:
+                event = "Request processed"
+                status = "info"
+            
+            # Calculate time ago
+            time_diff = datetime.utcnow() - log.timestamp
+            if time_diff.total_seconds() < 60:
+                time_ago = "Just now"
+            elif time_diff.total_seconds() < 3600:
+                minutes = int(time_diff.total_seconds() / 60)
+                time_ago = f"{minutes} min ago"
+            elif time_diff.total_seconds() < 86400:
+                hours = int(time_diff.total_seconds() / 3600)
+                time_ago = f"{hours} hour{'s' if hours != 1 else ''} ago"
+            else:
+                days = int(time_diff.total_seconds() / 86400)
+                time_ago = f"{days} day{'s' if days != 1 else ''} ago"
+            
+            formatted_logs.append({
+                "time": time_ago,
+                "event": event,
+                "proxy": proxy_name,
+                "status": status,
+                "details": {
+                    "status_code": log.status_code,
+                    "latency": log.latency,
+                    "cache_hit": log.cache_hit
+                }
+            })
+        
+        return {"logs": formatted_logs}
+        
+    except Exception as e:
+        logger.error(f"Error getting recent activity: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to get recent activity")
 
 @app.get("/healthz")
 async def health_check():

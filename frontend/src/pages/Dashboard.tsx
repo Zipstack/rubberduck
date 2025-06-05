@@ -24,16 +24,18 @@ const Dashboard: React.FC = () => {
   });
 
   const [proxies, setProxies] = useState<Proxy[]>([]);
+  const [recentActivity, setRecentActivity] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<string>('');
 
   useEffect(() => {
     loadDashboardData();
     
-    // Refresh data every 30 seconds
+    // Refresh data every 5 seconds for real-time updates
     const interval = setInterval(() => {
       loadDashboardData();
-    }, 30000);
+    }, 5000);
 
     return () => clearInterval(interval);
   }, []);
@@ -41,26 +43,17 @@ const Dashboard: React.FC = () => {
   const loadDashboardData = async () => {
     setError(null);
     try {
-      // Load proxies to calculate stats
-      const proxiesData = await apiClient.getProxies();
+      // Load real metrics from backend
+      const [metricsData, proxiesData, activityData] = await Promise.all([
+        apiClient.getDashboardMetrics(),
+        apiClient.getProxies(),
+        apiClient.getRecentActivity(5)
+      ]);
+
+      setStats(metricsData);
       setProxies(proxiesData);
-      
-      // Calculate stats from proxies
-      const running = proxiesData.filter(p => p.status === 'running').length;
-      const stopped = proxiesData.filter(p => p.status === 'stopped').length;
-      
-      // For now, we'll use mock data for metrics that aren't directly available
-      // In a real implementation, these would come from dedicated metrics endpoints
-      setStats({
-        total_proxies: proxiesData.length,
-        running_proxies: running,
-        stopped_proxies: stopped,
-        cache_hit_rate: 87.5, // Mock data
-        error_rate: 2.3, // Mock data
-        total_rpm: 1247, // Mock data
-        total_cost: 45.67, // Mock data
-        in_flight_requests: 23, // Mock data
-      });
+      setRecentActivity(activityData.logs || []);
+      setLastUpdated(new Date().toLocaleTimeString());
     } catch (error) {
       if (error instanceof ApiError) {
         setError(error.message);
@@ -148,13 +141,10 @@ const Dashboard: React.FC = () => {
         <div className="flex items-center space-x-3">
           <div className="flex items-center space-x-1 text-sm text-gray-500">
             <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-            <span>Live data</span>
+            <span>Live data{lastUpdated && ` • Updated ${lastUpdated}`}</span>
           </div>
           <button
-            onClick={() => {
-              setIsLoading(true);
-              setTimeout(() => setIsLoading(false), 1000);
-            }}
+            onClick={loadDashboardData}
             disabled={isLoading}
             className="btn-secondary"
           >
@@ -264,25 +254,25 @@ const Dashboard: React.FC = () => {
         <div className="card">
           <h3 className="text-lg font-medium text-gray-900 mb-4">Recent Activity</h3>
           <div className="space-y-3">
-            {[
-              { time: '2 min ago', event: 'Cache hit', proxy: 'OpenAI GPT-4', status: 'success' },
-              { time: '5 min ago', event: 'Request completed', proxy: 'Claude-3 Sonnet', status: 'success' },
-              { time: '7 min ago', event: 'Rate limit triggered', proxy: 'Gemini Pro', status: 'warning' },
-              { time: '12 min ago', event: 'Proxy started', proxy: 'GPT-3.5 Turbo', status: 'info' },
-              { time: '15 min ago', event: 'Error injection', proxy: 'OpenAI GPT-4', status: 'error' },
-            ].map((log, index) => (
-              <div key={index} className="flex items-center space-x-3 py-2">
-                <div className={`w-2 h-2 rounded-full ${
-                  log.status === 'success' ? 'bg-green-400' :
-                  log.status === 'warning' ? 'bg-yellow-400' :
-                  log.status === 'error' ? 'bg-red-400' : 'bg-blue-400'
-                }`}></div>
-                <div className="flex-1">
-                  <p className="text-sm text-gray-900">{log.event}</p>
-                  <p className="text-xs text-gray-500">{log.proxy} • {log.time}</p>
-                </div>
+            {recentActivity.length === 0 && !isLoading ? (
+              <div className="text-center py-4 text-gray-500">
+                No recent activity
               </div>
-            ))}
+            ) : (
+              recentActivity.map((log, index) => (
+                <div key={index} className="flex items-center space-x-3 py-2">
+                  <div className={`w-2 h-2 rounded-full ${
+                    log.status === 'success' ? 'bg-green-400' :
+                    log.status === 'warning' ? 'bg-yellow-400' :
+                    log.status === 'error' ? 'bg-red-400' : 'bg-blue-400'
+                  }`}></div>
+                  <div className="flex-1">
+                    <p className="text-sm text-gray-900">{log.event}</p>
+                    <p className="text-xs text-gray-500">{log.proxy} • {log.time}</p>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>

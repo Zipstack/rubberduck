@@ -208,11 +208,17 @@ class ProxyManager:
                     
                     return response
                 
+                # Extract path parameters and construct actual endpoint
+                path_params = dict(request.path_params)
+                actual_endpoint = endpoint
+                for param_name, param_value in path_params.items():
+                    actual_endpoint = actual_endpoint.replace(f"{{{param_name}}}", param_value)
+                
                 # Forward request to provider
                 response_data = await provider.forward_request(
                     request_data=request_data,
                     headers=headers,
-                    endpoint=endpoint
+                    endpoint=actual_endpoint
                 )
                 
                 # Cache successful responses

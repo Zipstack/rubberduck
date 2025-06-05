@@ -213,6 +213,15 @@ class ApiClient {
       },
     });
   }
+
+  // Dashboard endpoints
+  async getDashboardMetrics() {
+    return this.request<any>('/dashboard/metrics');
+  }
+
+  async getRecentActivity(limit: number = 10) {
+    return this.request<any>(`/dashboard/recent-activity?limit=${limit}`);
+  }
 }
 
 export const apiClient = new ApiClient();
