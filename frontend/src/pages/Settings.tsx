@@ -4,7 +4,9 @@ import {
   GlobeAltIcon,
   ShieldCheckIcon,
   KeyIcon,
+  TrashIcon,
 } from '@heroicons/react/24/outline';
+import { apiClient, ApiError } from '../utils/api';
 
 const Settings: React.FC = () => {
   const [settings, setSettings] = useState({
@@ -22,6 +24,8 @@ const Settings: React.FC = () => {
   });
 
   const [isLoading, setIsLoading] = useState(false);
+  const [isClearingCache, setIsClearingCache] = useState(false);
+  const [cacheMessage, setCacheMessage] = useState<string | null>(null);
 
   const handleSettingsChange = (key: string, value: any) => {
     setSettings(prev => ({ ...prev, [key]: value }));
@@ -43,6 +47,29 @@ const Settings: React.FC = () => {
       console.log('Settings saved:', settings);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleClearCache = async () => {
+    setIsClearingCache(true);
+    setCacheMessage(null);
+    try {
+      console.log('Attempting to clear cache...');
+      const response = await apiClient.clearAllCache();
+      console.log('Cache clear response:', response);
+      setCacheMessage(`${response.message} (${response.entries_removed} entries removed)`);
+    } catch (error) {
+      console.error('Cache clear error:', error);
+      console.error('Error details:', JSON.stringify(error, null, 2));
+      if (error instanceof ApiError) {
+        setCacheMessage(`Error (${error.status}): ${error.message}`);
+      } else {
+        setCacheMessage(`Failed to clear cache: ${error}`);
+      }
+    } finally {
+      setIsClearingCache(false);
+      // Clear message after 5 seconds
+      setTimeout(() => setCacheMessage(null), 5000);
     }
   };
 
@@ -282,6 +309,42 @@ const Settings: React.FC = () => {
               </label>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Cache Management */}
+      <div className="card">
+        <div className="flex items-center space-x-3 mb-6">
+          <div className="p-2 bg-red-50 text-red-600 rounded-lg">
+            <TrashIcon className="h-5 w-5" />
+          </div>
+          <h2 className="text-lg font-semibold text-gray-900">Cache Management</h2>
+        </div>
+        
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-medium text-gray-900">Clear All Cache</h3>
+              <p className="text-xs text-gray-500">Remove all cached responses from your proxies</p>
+            </div>
+            <button
+              onClick={handleClearCache}
+              disabled={isClearingCache}
+              className="btn-secondary text-red-600 border-red-200 hover:bg-red-50"
+            >
+              {isClearingCache ? 'Clearing...' : 'Clear Cache'}
+            </button>
+          </div>
+          
+          {cacheMessage && (
+            <div className={`p-3 rounded-lg text-sm ${
+              cacheMessage.startsWith('Error') 
+                ? 'bg-red-50 text-red-700 border border-red-200' 
+                : 'bg-green-50 text-green-700 border border-green-200'
+            }`}>
+              {cacheMessage}
+            </div>
+          )}
         </div>
       </div>
 

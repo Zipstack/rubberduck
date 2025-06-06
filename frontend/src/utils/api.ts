@@ -51,9 +51,20 @@ class ApiClient {
         const errorText = await response.text();
         let errorMessage = `HTTP ${response.status}`;
         
+        console.log(`API Error ${response.status}:`, errorText);
+        
         try {
           const errorData = JSON.parse(errorText);
-          errorMessage = errorData.detail || errorData.message || errorMessage;
+          if (response.status === 422 && errorData.detail) {
+            // Handle FastAPI validation errors
+            if (Array.isArray(errorData.detail)) {
+              errorMessage = errorData.detail.map((err: any) => err.msg).join(', ');
+            } else {
+              errorMessage = errorData.detail;
+            }
+          } else {
+            errorMessage = errorData.detail || errorData.message || errorMessage;
+          }
         } catch {
           errorMessage = errorText || errorMessage;
         }
@@ -221,6 +232,21 @@ class ApiClient {
 
   async getRecentActivity(limit: number = 10) {
     return this.request<any>(`/dashboard/recent-activity?limit=${limit}`);
+  }
+
+  // Failure config endpoints
+  async resetProxyFailureConfig(proxyId: number) {
+    return this.request<any>(`/proxies/${proxyId}/failure-config/reset`, {
+      method: 'POST',
+    });
+  }
+
+  // Cache endpoints
+  async clearAllCache() {
+    console.log('Making DELETE request to /cache');
+    return this.request<{ message: string; entries_removed: number }>('/cache', {
+      method: 'DELETE',
+    });
   }
 }
 

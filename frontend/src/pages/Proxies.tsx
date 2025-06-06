@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { PlusIcon, MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, MagnifyingGlassIcon, XMarkIcon, ClipboardDocumentIcon, CheckIcon } from '@heroicons/react/24/outline';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import type { Proxy } from '../types';
 import ProxyCard from '../components/ProxyCard';
 import ProxyConfigModal from '../components/ProxyConfigModal';
 import { apiClient, ApiError } from '../utils/api';
-import { useWebSocket } from '../hooks/useWebSocket';
 
 const generateCurlExample = (proxy: Proxy): string => {
   const baseUrl = `http://localhost:${proxy.port}`;
@@ -13,7 +14,7 @@ const generateCurlExample = (proxy: Proxy): string => {
     case 'openai':
       return `curl -X POST "${baseUrl}/v1/chat/completions" \\
   -H "Content-Type: application/json" \\
-  -H "Authorization: Bearer YOUR_OPENAI_API_KEY" \\
+  -H "Authorization: Bearer \${OPENAI_API_KEY:-YOUR_OPENAI_API_KEY}" \\
   -d '{
     "model": "gpt-4",
     "messages": [
@@ -24,7 +25,7 @@ const generateCurlExample = (proxy: Proxy): string => {
     case 'anthropic':
       return `curl -X POST "${baseUrl}/messages" \\
   -H "Content-Type: application/json" \\
-  -H "x-api-key: YOUR_ANTHROPIC_API_KEY" \\
+  -H "x-api-key: \${ANTHROPIC_API_KEY:-YOUR_ANTHROPIC_API_KEY}" \\
   -H "anthropic-version: 2023-06-01" \\
   -d '{
     "model": "claude-3-sonnet-20240229",
@@ -35,9 +36,9 @@ const generateCurlExample = (proxy: Proxy): string => {
   }'`;
     
     case 'azure_openai':
-      return `curl -X POST "${baseUrl}/openai/deployments/YOUR_DEPLOYMENT/chat/completions?api-version=2023-12-01-preview" \\
+      return `curl -X POST "${baseUrl}/openai/deployments/\${AZURE_DEPLOYMENT_NAME:-YOUR_DEPLOYMENT}/chat/completions?api-version=2023-12-01-preview" \\
   -H "Content-Type: application/json" \\
-  -H "api-key: YOUR_AZURE_API_KEY" \\
+  -H "api-key: \${AZURE_OPENAI_API_KEY:-YOUR_AZURE_API_KEY}" \\
   -d '{
     "messages": [
       {"role": "user", "content": "Hello, world!"}
@@ -47,7 +48,7 @@ const generateCurlExample = (proxy: Proxy): string => {
     case 'bedrock':
       return `curl -X POST "${baseUrl}/model/anthropic.claude-3-sonnet-20240229-v1:0/invoke" \\
   -H "Content-Type: application/json" \\
-  -H "Authorization: AWS4-HMAC-SHA256 Credential=..." \\
+  -H "Authorization: AWS4-HMAC-SHA256 Credential=\${AWS_ACCESS_KEY_ID:-YOUR_AWS_ACCESS_KEY}..." \\
   -d '{
     "anthropic_version": "bedrock-2023-05-31",
     "max_tokens": 1024,
@@ -57,9 +58,9 @@ const generateCurlExample = (proxy: Proxy): string => {
   }'`;
     
     case 'vertex_ai':
-      return `curl -X POST "${baseUrl}/projects/YOUR_PROJECT/locations/us-central1/publishers/google/models/gemini-pro:generateContent" \\
+      return `curl -X POST "${baseUrl}/projects/\${GOOGLE_CLOUD_PROJECT:-YOUR_PROJECT}/locations/us-central1/publishers/google/models/gemini-pro:generateContent" \\
   -H "Content-Type: application/json" \\
-  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \\
+  -H "Authorization: Bearer \${GOOGLE_ACCESS_TOKEN:-YOUR_ACCESS_TOKEN}" \\
   -d '{
     "contents": [{
       "parts": [{"text": "Hello, world!"}]
@@ -69,7 +70,7 @@ const generateCurlExample = (proxy: Proxy): string => {
     default:
       return `curl -X POST "${baseUrl}/your-endpoint" \\
   -H "Content-Type: application/json" \\
-  -H "Authorization: Bearer YOUR_API_KEY" \\
+  -H "Authorization: Bearer \${API_KEY:-YOUR_API_KEY}" \\
   -d '{"message": "Hello, world!"}'`;
   }
 };
@@ -79,10 +80,11 @@ const generatePythonExample = (proxy: Proxy): string => {
   
   switch (proxy.provider.toLowerCase()) {
     case 'openai':
-      return `import openai
+      return `import os
+import openai
 
 client = openai.OpenAI(
-    api_key="YOUR_OPENAI_API_KEY",
+    api_key=os.getenv("OPENAI_API_KEY", "YOUR_OPENAI_API_KEY"),
     base_url="${baseUrl}/v1"
 )
 
@@ -95,10 +97,11 @@ response = client.chat.completions.create(
 print(response.choices[0].message.content)`;
     
     case 'anthropic':
-      return `import anthropic
+      return `import os
+import anthropic
 
 client = anthropic.Anthropic(
-    api_key="YOUR_ANTHROPIC_API_KEY",
+    api_key=os.getenv("ANTHROPIC_API_KEY", "YOUR_ANTHROPIC_API_KEY"),
     base_url="${baseUrl}"
 )
 
@@ -112,16 +115,17 @@ message = client.messages.create(
 print(message.content[0].text)`;
     
     case 'azure_openai':
-      return `import openai
+      return `import os
+import openai
 
 client = openai.AzureOpenAI(
     azure_endpoint="${baseUrl}",
-    api_key="YOUR_AZURE_API_KEY",
+    api_key=os.getenv("AZURE_OPENAI_API_KEY", "YOUR_AZURE_API_KEY"),
     api_version="2023-12-01-preview"
 )
 
 response = client.chat.completions.create(
-    model="YOUR_DEPLOYMENT_NAME",
+    model=os.getenv("AZURE_DEPLOYMENT_NAME", "YOUR_DEPLOYMENT_NAME"),
     messages=[
         {"role": "user", "content": "Hello, world!"}
     ]
@@ -129,12 +133,15 @@ response = client.chat.completions.create(
 print(response.choices[0].message.content)`;
     
     case 'bedrock':
-      return `import boto3
+      return `import os
+import boto3
 import json
 
 client = boto3.client('bedrock-runtime',
-    region_name='us-east-1',
-    endpoint_url="${baseUrl}"
+    region_name=os.getenv("AWS_REGION", "us-east-1"),
+    endpoint_url="${baseUrl}",
+    aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
+    aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY")
 )
 
 response = client.invoke_model(
@@ -150,10 +157,11 @@ response = client.invoke_model(
 print(json.loads(response['body'].read())['content'][0]['text'])`;
     
     case 'vertex_ai':
-      return `import requests
+      return `import os
+import requests
 
 headers = {
-    'Authorization': 'Bearer YOUR_ACCESS_TOKEN',
+    'Authorization': f'Bearer {os.getenv("GOOGLE_ACCESS_TOKEN", "YOUR_ACCESS_TOKEN")}',
     'Content-Type': 'application/json'
 }
 
@@ -163,19 +171,21 @@ data = {
     }]
 }
 
+project = os.getenv("GOOGLE_CLOUD_PROJECT", "YOUR_PROJECT")
 response = requests.post(
-    '${baseUrl}/projects/YOUR_PROJECT/locations/us-central1/publishers/google/models/gemini-pro:generateContent',
+    f'${baseUrl}/projects/{project}/locations/us-central1/publishers/google/models/gemini-pro:generateContent',
     headers=headers,
     json=data
 )
 print(response.json()['candidates'][0]['content']['parts'][0]['text'])`;
     
     default:
-      return `import requests
+      return `import os
+import requests
 
 response = requests.post('${baseUrl}/your-endpoint',
     headers={
-        'Authorization': 'Bearer YOUR_API_KEY',
+        'Authorization': f'Bearer {os.getenv("API_KEY", "YOUR_API_KEY")}',
         'Content-Type': 'application/json'
     },
     json={'message': 'Hello, world!'}
@@ -192,7 +202,7 @@ const generateJavaScriptExample = (proxy: Proxy): string => {
       return `import OpenAI from 'openai';
 
 const openai = new OpenAI({
-  apiKey: 'YOUR_OPENAI_API_KEY',
+  apiKey: process.env.OPENAI_API_KEY || 'YOUR_OPENAI_API_KEY',
   baseURL: '${baseUrl}/v1'
 });
 
@@ -209,7 +219,7 @@ console.log(response.choices[0].message.content);`;
       return `import Anthropic from '@anthropic-ai/sdk';
 
 const anthropic = new Anthropic({
-  apiKey: 'YOUR_ANTHROPIC_API_KEY',
+  apiKey: process.env.ANTHROPIC_API_KEY || 'YOUR_ANTHROPIC_API_KEY',
   baseURL: '${baseUrl}'
 });
 
@@ -228,12 +238,12 @@ console.log(message.content[0].text);`;
 
 const client = new AzureOpenAI({
   endpoint: '${baseUrl}',
-  apiKey: 'YOUR_AZURE_API_KEY',
+  apiKey: process.env.AZURE_OPENAI_API_KEY || 'YOUR_AZURE_API_KEY',
   apiVersion: '2023-12-01-preview'
 });
 
 const response = await client.chat.completions.create({
-  model: 'YOUR_DEPLOYMENT_NAME',
+  model: process.env.AZURE_DEPLOYMENT_NAME || 'YOUR_DEPLOYMENT_NAME',
   messages: [
     { role: 'user', content: 'Hello, world!' }
   ]
@@ -245,8 +255,12 @@ console.log(response.choices[0].message.content);`;
       return `import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime';
 
 const client = new BedrockRuntimeClient({
-  region: 'us-east-1',
-  endpoint: '${baseUrl}'
+  region: process.env.AWS_REGION || 'us-east-1',
+  endpoint: '${baseUrl}',
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+  }
 });
 
 const command = new InvokeModelCommand({
@@ -265,10 +279,13 @@ const result = JSON.parse(new TextDecoder().decode(response.body));
 console.log(result.content[0].text);`;
     
     case 'vertex_ai':
-      return `const response = await fetch('${baseUrl}/projects/YOUR_PROJECT/locations/us-central1/publishers/google/models/gemini-pro:generateContent', {
+      return `const project = process.env.GOOGLE_CLOUD_PROJECT || 'YOUR_PROJECT';
+const accessToken = process.env.GOOGLE_ACCESS_TOKEN || 'YOUR_ACCESS_TOKEN';
+
+const response = await fetch(\`\${baseUrl}/projects/\${project}/locations/us-central1/publishers/google/models/gemini-pro:generateContent\`, {
   method: 'POST',
   headers: {
-    'Authorization': 'Bearer YOUR_ACCESS_TOKEN',
+    'Authorization': \`Bearer \${accessToken}\`,
     'Content-Type': 'application/json'
   },
   body: JSON.stringify({
@@ -285,7 +302,7 @@ console.log(data.candidates[0].content.parts[0].text);`;
       return `const response = await fetch('${baseUrl}/your-endpoint', {
   method: 'POST',
   headers: {
-    'Authorization': 'Bearer YOUR_API_KEY',
+    'Authorization': \`Bearer \${process.env.API_KEY || 'YOUR_API_KEY'}\`,
     'Content-Type': 'application/json'
   },
   body: JSON.stringify({ message: 'Hello, world!' })
@@ -294,6 +311,66 @@ console.log(data.candidates[0].content.parts[0].text);`;
 const data = await response.json();
 console.log(data);`;
   }
+};
+
+// Syntax highlighting component
+const CodeBlock: React.FC<{ 
+  code: string; 
+  language: string; 
+  onCopy: (code: string, language: string) => void;
+  isCopied: boolean;
+}> = ({ code, language, onCopy, isCopied }) => {
+  // Map our language names to Prism language identifiers
+  const getLanguageId = (lang: string) => {
+    switch (lang) {
+      case 'curl':
+        return 'bash';
+      case 'javascript':
+        return 'javascript';
+      case 'python':
+        return 'python';
+      default:
+        return 'text';
+    }
+  };
+
+  return (
+    <div className="relative">
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="text-md font-medium text-gray-900 capitalize">{language}</h3>
+        <button
+          onClick={() => onCopy(code, language)}
+          className="flex items-center space-x-1 px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded transition-colors"
+        >
+          {isCopied ? (
+            <>
+              <CheckIcon className="h-3 w-3 text-green-600" />
+              <span className="text-green-600">Copied!</span>
+            </>
+          ) : (
+            <>
+              <ClipboardDocumentIcon className="h-3 w-3" />
+              <span>Copy</span>
+            </>
+          )}
+        </button>
+      </div>
+      <div className="rounded-lg border overflow-hidden">
+        <SyntaxHighlighter
+          language={getLanguageId(language)}
+          style={oneLight}
+          customStyle={{
+            margin: 0,
+            padding: '1rem',
+            fontSize: '0.875rem',
+            lineHeight: '1.25rem'
+          }}
+        >
+          {code}
+        </SyntaxHighlighter>
+      </div>
+    </div>
+  );
 };
 
 const Proxies: React.FC = () => {
@@ -305,9 +382,9 @@ const Proxies: React.FC = () => {
   const [selectedProxy, setSelectedProxy] = useState<Proxy | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [lastUpdated, setLastUpdated] = useState<string>('');
   const [showCodeModal, setShowCodeModal] = useState(false);
   const [codeModalProxy, setCodeModalProxy] = useState<Proxy | null>(null);
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
   
   // Create proxy form state
   const [providers, setProviders] = useState<string[]>([]);
@@ -419,13 +496,15 @@ const Proxies: React.FC = () => {
   };
 
   const handleClearProxyCache = async (proxy: Proxy) => {
-    try {
-      await apiClient.invalidateCache(proxy.id);
-      alert(`Cache cleared for ${proxy.name}`);
-    } catch (error) {
-      console.error('Failed to clear cache:', error);
-      if (error instanceof ApiError) {
-        alert(`Failed to clear cache: ${error.message}`);
+    if (confirm(`Are you sure you want to clear the cache for "${proxy.name}"? This action cannot be undone.`)) {
+      try {
+        await apiClient.invalidateCache(proxy.id);
+        alert(`Cache cleared for ${proxy.name}`);
+      } catch (error) {
+        console.error('Failed to clear cache:', error);
+        if (error instanceof ApiError) {
+          alert(`Failed to clear cache: ${error.message}`);
+        }
       }
     }
   };
@@ -433,6 +512,16 @@ const Proxies: React.FC = () => {
   const handleShowCode = (proxy: Proxy) => {
     setCodeModalProxy(proxy);
     setShowCodeModal(true);
+  };
+
+  const copyToClipboard = async (code: string, language: string) => {
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopiedCode(language);
+      setTimeout(() => setCopiedCode(null), 2000);
+    } catch (error) {
+      console.error('Failed to copy code:', error);
+    }
   };
 
   const handleCloseCreateModal = () => {
@@ -498,8 +587,7 @@ const Proxies: React.FC = () => {
             <div className="flex items-center space-x-1 text-sm text-gray-500">
               <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-400 animate-pulse' : 'bg-red-400'}`}></div>
               <span>
-                {isConnected ? 'Live updates' : 'Disconnected'} 
-                {lastUpdated && ` • Updated ${lastUpdated}`}
+                {isConnected ? 'Live updates' : 'Disconnected'}
               </span>
             </div>
           </div>
@@ -788,34 +876,28 @@ const Proxies: React.FC = () => {
               </p>
 
               {/* cURL Example */}
-              <div>
-                <h3 className="text-md font-medium text-gray-900 mb-3">cURL</h3>
-                <div className="bg-gray-50 p-4 rounded-lg border">
-                  <pre className="text-sm overflow-x-auto">
-                    <code>{generateCurlExample(codeModalProxy)}</code>
-                  </pre>
-                </div>
-              </div>
+              <CodeBlock
+                code={generateCurlExample(codeModalProxy)}
+                language="curl"
+                onCopy={copyToClipboard}
+                isCopied={copiedCode === 'curl'}
+              />
 
               {/* Python Example */}
-              <div>
-                <h3 className="text-md font-medium text-gray-900 mb-3">Python</h3>
-                <div className="bg-gray-50 p-4 rounded-lg border">
-                  <pre className="text-sm overflow-x-auto">
-                    <code>{generatePythonExample(codeModalProxy)}</code>
-                  </pre>
-                </div>
-              </div>
+              <CodeBlock
+                code={generatePythonExample(codeModalProxy)}
+                language="python"
+                onCopy={copyToClipboard}
+                isCopied={copiedCode === 'python'}
+              />
 
               {/* JavaScript Example */}
-              <div>
-                <h3 className="text-md font-medium text-gray-900 mb-3">JavaScript</h3>
-                <div className="bg-gray-50 p-4 rounded-lg border">
-                  <pre className="text-sm overflow-x-auto">
-                    <code>{generateJavaScriptExample(codeModalProxy)}</code>
-                  </pre>
-                </div>
-              </div>
+              <CodeBlock
+                code={generateJavaScriptExample(codeModalProxy)}
+                language="javascript"
+                onCopy={copyToClipboard}
+                isCopied={copiedCode === 'javascript'}
+              />
             </div>
 
             {/* Modal Footer */}

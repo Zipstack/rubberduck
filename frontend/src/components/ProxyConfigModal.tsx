@@ -99,9 +99,7 @@ const ProxyConfigModal: React.FC<ProxyConfigModalProps> = ({
     setIsLoading(true);
     setError(null);
     try {
-      await apiClient.request(`/proxies/${proxy.id}/failure-config/reset`, {
-        method: 'POST',
-      });
+      await apiClient.resetProxyFailureConfig(proxy.id);
       await loadConfig(); // Reload to get default values
     } catch (error) {
       if (error instanceof ApiError) {

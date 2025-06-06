@@ -7,7 +7,6 @@ import {
 } from '@heroicons/react/24/outline';
 import type { LogEntry } from '../types';
 import { apiClient, ApiError } from '../utils/api';
-import { useWebSocket } from '../hooks/useWebSocket';
 
 const Logs: React.FC = () => {
   const [logs, setLogs] = useState<LogEntry[]>([]);
@@ -20,65 +19,33 @@ const Logs: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string>('');
 
-  // WebSocket connection for real-time log streaming
-  const token = localStorage.getItem('auth_token') || '';
-  const wsUrl = `ws://localhost:8000/ws/proxies`;
-  
-  const { isConnected, subscribe, unsubscribe } = useWebSocket(wsUrl, token, {
-    onMessage: (message) => {
-      if (message.type === 'new_log_entry') {
-        // Add new log entry to the beginning of the list
-        setLogs(prevLogs => {
-          const newLog = message.data;
-          // Avoid duplicates by checking if log already exists
-          const exists = prevLogs.some(log => log.id === newLog.id);
-          if (!exists) {
-            return [newLog, ...prevLogs.slice(0, 99)]; // Keep only 100 most recent logs
-          }
-          return prevLogs;
-        });
-        setLastUpdated(new Date().toLocaleTimeString());
-        console.log('New log entry received via WebSocket:', message);
-      } else if (message.type === 'logs_subscribed') {
-        console.log('Subscribed to real-time log updates');
-        setIsStreaming(true);
-      } else if (message.type === 'connection_established') {
-        console.log('Logs WebSocket connection established');
-        // Subscribe to log updates
-        subscribe('subscribe_logs');
-      }
-    },
-    onConnect: () => {
-      console.log('Connected to logs WebSocket');
-      // Subscribe to log updates when connected
-      setTimeout(() => subscribe('subscribe_logs'), 100);
-    },
-    onDisconnect: () => {
-      console.log('Disconnected from logs WebSocket');
-      setIsStreaming(false);
-    },
-    onError: (error) => {
-      console.error('Logs WebSocket error:', error);
-      setIsStreaming(false);
-    }
-  });
+  // WebSocket temporarily disabled - using polling instead
+  const isConnected = false;
 
   const toggleStreaming = () => {
-    if (isStreaming) {
-      unsubscribe();
-      setIsStreaming(false);
-    } else {
-      subscribe('subscribe_logs');
-      setIsStreaming(true);
-    }
+    // WebSocket disabled - toggle between fast/slow polling
+    setIsStreaming(!isStreaming);
   };
 
   useEffect(() => {
     loadLogs();
   }, [statusFilter, proxyFilter, cacheFilter]);
 
-  const loadLogs = async () => {
-    setIsLoading(true);
+  // Polling for log updates - always active with different rates
+  useEffect(() => {
+    const refreshRate = isStreaming ? 3000 : 10000; // 3s when streaming, 10s normally
+    
+    const interval = setInterval(() => {
+      loadLogs(false); // Don't show loading spinner on auto-refresh
+    }, refreshRate);
+    
+    return () => clearInterval(interval);
+  }, [isStreaming, statusFilter, proxyFilter, cacheFilter]);
+
+  const loadLogs = async (showLoading = true) => {
+    if (showLoading) {
+      setIsLoading(true);
+    }
     setError(null);
     try {
       const filters: any = {};
@@ -90,6 +57,7 @@ const Logs: React.FC = () => {
 
       const data = await apiClient.getLogs(filters);
       setLogs(data);
+      setLastUpdated(new Date().toLocaleTimeString());
     } catch (error) {
       if (error instanceof ApiError) {
         setError(error.message);
@@ -98,7 +66,9 @@ const Logs: React.FC = () => {
       }
       console.error('Failed to load logs:', error);
     } finally {
-      setIsLoading(false);
+      if (showLoading) {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -121,28 +91,6 @@ const Logs: React.FC = () => {
     return matchesSearch && matchesStatus && matchesProxy && matchesCache;
   });
 
-  useEffect(() => {
-    if (isStreaming) {
-      const interval = setInterval(() => {
-        const newLog: LogEntry = {
-          id: Date.now(),
-          timestamp: new Date().toISOString(),
-          proxy_id: Math.floor(Math.random() * 4) + 1,
-          ip_address: `192.168.1.${Math.floor(Math.random() * 255)}`,
-          status_code: Math.random() > 0.9 ? 429 : 200,
-          latency: Math.floor(Math.random() * 2000) + 50,
-          cache_hit: Math.random() > 0.3,
-          prompt_hash: `${Math.random().toString(36).substring(2, 8)}...`,
-          token_usage: Math.floor(Math.random() * 200) + 50,
-          cost: Math.random() * 0.01,
-        };
-        
-        setLogs(prev => [newLog, ...prev.slice(0, 49)]); // Keep last 50 logs
-      }, 3000);
-
-      return () => clearInterval(interval);
-    }
-  }, [isStreaming]);
 
   const getStatusColor = (statusCode: number, failureType?: string) => {
     if (failureType) return 'bg-orange-100 text-orange-800';
@@ -304,7 +252,7 @@ const Logs: React.FC = () => {
           <div className="flex items-center justify-between">
             <span>{error}</span>
             <button
-              onClick={loadLogs}
+              onClick={() => loadLogs()}
               className="text-red-600 hover:text-red-800 font-medium"
             >
               Retry

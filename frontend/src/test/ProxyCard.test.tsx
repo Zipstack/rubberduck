@@ -6,7 +6,6 @@ const mockProxy: Proxy = {
   id: 1,
   name: 'Test Proxy',
   provider: 'openai',
-  model_name: 'gpt-4',
   description: 'Test proxy description',
   tags: ['test', 'development'],
   port: 8001,
@@ -19,6 +18,8 @@ const mockHandlers = {
   onStop: vi.fn(),
   onConfigure: vi.fn(),
   onDelete: vi.fn(),
+  onClearCache: vi.fn(),
+  onShowCode: vi.fn(),
 };
 
 describe('ProxyCard', () => {
@@ -30,7 +31,7 @@ describe('ProxyCard', () => {
     render(<ProxyCard proxy={mockProxy} {...mockHandlers} />);
     
     expect(screen.getByText('Test Proxy')).toBeInTheDocument();
-    expect(screen.getByText('openai • gpt-4')).toBeInTheDocument();
+    expect(screen.getByText('openai')).toBeInTheDocument();
     expect(screen.getByText('Test proxy description')).toBeInTheDocument();
     expect(screen.getByText('Port: 8001')).toBeInTheDocument();
     expect(screen.getByText('running')).toBeInTheDocument();
