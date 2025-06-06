@@ -23,7 +23,7 @@ const Dashboard: React.FC = () => {
     in_flight_requests: 0,
   });
 
-  const [proxies, setProxies] = useState<Proxy[]>([]);
+  const [proxies, setProxies] = useState<any[]>([]);
   const [recentActivity, setRecentActivity] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -44,14 +44,14 @@ const Dashboard: React.FC = () => {
     setError(null);
     try {
       // Load real metrics from backend
-      const [metricsData, proxiesData, activityData] = await Promise.all([
+      const [metricsData, activityData] = await Promise.all([
         apiClient.getDashboardMetrics(),
-        apiClient.getProxies(),
         apiClient.getRecentActivity(5)
       ]);
 
       setStats(metricsData);
-      setProxies(proxiesData);
+      // Use proxy_metrics from the dashboard metrics instead of separate proxy call
+      setProxies(metricsData.proxy_metrics || []);
       setRecentActivity(activityData.logs || []);
       setLastUpdated(new Date().toLocaleTimeString());
     } catch (error) {
@@ -237,7 +237,7 @@ const Dashboard: React.FC = () => {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-medium text-gray-900">0 RPM</p>
+                    <p className="text-sm font-medium text-gray-900">{proxy.rpm ? proxy.rpm.toFixed(1) : '0.0'} RPM</p>
                     <p className={`text-xs capitalize ${
                       proxy.status === 'running' ? 'text-green-600' : 'text-gray-500'
                     }`}>

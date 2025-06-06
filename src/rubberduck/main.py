@@ -1,8 +1,10 @@
 import csv
 import io
+import json
+import asyncio
 from datetime import datetime, timedelta
-from typing import Optional, List
-from fastapi import FastAPI, Depends, HTTPException, Query
+from typing import Optional, List, Dict, Set
+from fastapi import FastAPI, Depends, HTTPException, Query, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response, StreamingResponse
 from .auth import auth_backend, fastapi_users, current_active_user
@@ -24,17 +26,75 @@ app = FastAPI(title="Rubberduck", version="0.1.0")
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# WebSocket Connection Manager
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: Dict[str, Set[WebSocket]] = {}
+        
+    async def connect(self, websocket: WebSocket, user_id: str):
+        await websocket.accept()
+        if user_id not in self.active_connections:
+            self.active_connections[user_id] = set()
+        self.active_connections[user_id].add(websocket)
+        
+    def disconnect(self, websocket: WebSocket, user_id: str):
+        if user_id in self.active_connections:
+            self.active_connections[user_id].discard(websocket)
+            if not self.active_connections[user_id]:
+                del self.active_connections[user_id]
+                
+    async def send_personal_message(self, message: dict, user_id: str):
+        if user_id in self.active_connections:
+            message_str = json.dumps(message)
+            # Send to all connections for this user
+            disconnected = set()
+            for connection in self.active_connections[user_id].copy():
+                try:
+                    await connection.send_text(message_str)
+                except:
+                    disconnected.add(connection)
+            
+            # Clean up disconnected connections
+            for connection in disconnected:
+                self.active_connections[user_id].discard(connection)
+
+manager = ConnectionManager()
+
 @app.on_event("startup")
 async def startup_event():
     """
-    Startup event handler that restarts any proxies that were left in running state.
-    This ensures proxy continuity across application restarts.
+    Startup event handler that creates default user and restarts any proxies 
+    that were left in running state. This ensures proxy continuity across 
+    application restarts.
     """
     logger.info("Starting up Rubberduck application...")
     
-    # Query database for proxies that were left in running state
     db = SessionLocal()
     try:
+        # Check if any users exist, if not create default user
+        user_count = db.query(User).count()
+        if user_count == 0:
+            logger.info("No users found in database, creating default user")
+            try:
+                from .auth import user_manager
+                from .models.schemas import UserCreate
+                
+                # Create default user
+                default_user_data = UserCreate(
+                    email="admin@rubberduck.local",
+                    password="admin"
+                )
+                
+                # Use the user manager to create the user properly
+                default_user = await user_manager.create(default_user_data, safe=False)
+                logger.info(f"Created default user: {default_user.email}")
+                
+            except Exception as e:
+                logger.error(f"Failed to create default user: {str(e)}")
+        else:
+            logger.info(f"Found {user_count} existing users in database")
+        
+        # Query database for proxies that were left in running state
         running_proxies = db.query(Proxy).filter(Proxy.status == "running").all()
         
         if running_proxies:
@@ -62,7 +122,7 @@ async def startup_event():
             logger.info("No proxies found in running state - no restart needed")
             
     except Exception as e:
-        logger.error(f"Error during proxy startup: {str(e)}")
+        logger.error(f"Error during application startup: {str(e)}")
     finally:
         db.close()
     
@@ -71,8 +131,8 @@ async def startup_event():
 @app.on_event("shutdown")
 async def shutdown_event():
     """
-    Shutdown event handler to gracefully stop all running proxies.
-    This ensures clean shutdown and proper database state.
+    Shutdown event handler to gracefully stop all running proxy processes.
+    Database status remains 'running' so proxies can be restarted on app startup.
     """
     logger.info("Shutting down Rubberduck application...")
     
@@ -82,28 +142,15 @@ async def shutdown_event():
     if active_proxies:
         logger.info(f"Gracefully stopping {len(active_proxies)} active proxies")
         
-        db = SessionLocal()
-        try:
-            for proxy_info in active_proxies:
-                proxy_id = proxy_info["proxy_id"]
-                try:
-                    logger.info(f"Stopping proxy {proxy_id}")
-                    proxy_manager.stop_proxy(proxy_id)
-                    
-                    # Update database status
-                    proxy = db.query(Proxy).filter(Proxy.id == proxy_id).first()
-                    if proxy:
-                        proxy.status = "stopped"
-                        db.commit()
-                        logger.info(f"Stopped proxy {proxy_id} and updated database")
-                        
-                except Exception as e:
-                    logger.error(f"Error stopping proxy {proxy_id}: {str(e)}")
-                    
-        except Exception as e:
-            logger.error(f"Error during proxy shutdown: {str(e)}")
-        finally:
-            db.close()
+        for proxy_info in active_proxies:
+            proxy_id = proxy_info["proxy_id"]
+            try:
+                logger.info(f"Stopping proxy {proxy_id}")
+                proxy_manager.stop_proxy(proxy_id)
+                logger.info(f"Stopped proxy {proxy_id} (status remains 'running' in database for restart)")
+                
+            except Exception as e:
+                logger.error(f"Error stopping proxy {proxy_id}: {str(e)}")
     else:
         logger.info("No active proxies to stop")
     
@@ -190,9 +237,9 @@ async def get_dashboard_metrics(
         else:
             error_rate = 0.0
         
-        # Calculate RPM (requests in the last hour)
+        # Calculate RPM (requests per minute based on last hour)
         recent_hour_logs = [log for log in recent_logs if log.timestamp >= last_hour]
-        total_rpm = len(recent_hour_logs)
+        total_rpm = len(recent_hour_logs) / 60.0  # Divide by 60 to get per-minute rate
         
         # Calculate total cost (sum of cost field where available)
         total_cost = sum([log.cost for log in recent_logs if log.cost is not None])
@@ -201,15 +248,32 @@ async def get_dashboard_metrics(
         active_proxies = proxy_manager.list_active_proxies()
         in_flight_requests = len(active_proxies)  # Simplified metric
         
+        # Calculate per-proxy metrics
+        proxy_metrics = []
+        for proxy in user_proxies:
+            # Get logs for this specific proxy in the last hour
+            proxy_hour_logs = [log for log in recent_hour_logs if log.proxy_id == proxy.id]
+            proxy_rpm = len(proxy_hour_logs) / 60.0  # Divide by 60 to get per-minute rate
+            
+            proxy_metrics.append({
+                "proxy_id": proxy.id,
+                "name": proxy.name,
+                "provider": proxy.provider,
+                "status": proxy.status,
+                "port": proxy.port,
+                "rpm": round(proxy_rpm, 1)  # Round to 1 decimal place
+            })
+        
         return {
             "total_proxies": total_proxies,
             "running_proxies": running_proxies,
             "stopped_proxies": stopped_proxies,
             "cache_hit_rate": round(cache_hit_rate, 1),
             "error_rate": round(error_rate, 1),
-            "total_rpm": total_rpm,
+            "total_rpm": round(total_rpm, 1),
             "total_cost": round(total_cost, 2),
             "in_flight_requests": in_flight_requests,
+            "proxy_metrics": proxy_metrics,
             "last_updated": now.isoformat()
         }
         
@@ -303,6 +367,45 @@ async def health_check():
 async def protected_route(user: User = Depends(current_active_user)):
     return f"Hello {user.email}"
 
+# WebSocket endpoint for real-time proxy status updates
+@app.websocket("/ws/proxies")
+async def websocket_endpoint(websocket: WebSocket, token: str = Query(...)):
+    # Simple token validation and user connection
+    try:
+        if token and len(token) > 10:  # Basic token validation
+            # For this demo, we'll use a simplified approach
+            # In production, you'd decode the JWT and extract the actual user ID
+            user_id = token[:8]  # Use part of token as user identifier
+            await manager.connect(websocket, user_id)
+            logger.info(f"WebSocket connected for user {user_id}")
+            
+            try:
+                # Send initial connection confirmation
+                await websocket.send_text(json.dumps({
+                    "type": "connection_established",
+                    "message": "Connected to proxy status updates"
+                }))
+                
+                # Keep connection alive
+                while True:
+                    data = await websocket.receive_text()
+                    # Handle ping/pong or other messages
+                    if data == "ping":
+                        await websocket.send_text("pong")
+                        
+            except WebSocketDisconnect:
+                manager.disconnect(websocket, user_id)
+                logger.info(f"WebSocket disconnected for user {user_id}")
+        else:
+            await websocket.close(code=1008, reason="Invalid token")
+            
+    except Exception as e:
+        logger.error(f"WebSocket error: {str(e)}")
+        try:
+            await websocket.close(code=1011, reason="Internal error")
+        except:
+            pass
+
 # Proxy management endpoints
 @app.post("/proxies")
 async def create_proxy(
@@ -315,11 +418,24 @@ async def create_proxy(
     if proxy_data.get("provider") not in list_providers():
         raise HTTPException(status_code=400, detail="Invalid provider")
     
+    # Validate port if provided
+    requested_port = proxy_data.get("port")
+    if requested_port is not None:
+        # Validate port range
+        if not isinstance(requested_port, int) or requested_port < 1024 or requested_port > 65535:
+            raise HTTPException(status_code=400, detail="Port must be an integer between 1024 and 65535")
+        
+        # Check if port is already in use by another proxy
+        existing_proxy = db.query(Proxy).filter(Proxy.port == requested_port).first()
+        if existing_proxy:
+            raise HTTPException(status_code=400, detail=f"Port {requested_port} is already assigned to proxy '{existing_proxy.name}'")
+    
     # Create proxy in database
     proxy = Proxy(
         name=proxy_data["name"],
         provider=proxy_data["provider"],
         description=proxy_data.get("description", ""),
+        port=requested_port,  # Set the user-provided port
         user_id=user.id,
         status="stopped"
     )
@@ -327,6 +443,20 @@ async def create_proxy(
     db.add(proxy)
     db.commit()
     db.refresh(proxy)
+    
+    # Send WebSocket notification about new proxy
+    for user_id in manager.active_connections.keys():
+        await manager.send_personal_message({
+            "type": "proxy_created",
+            "proxy_id": proxy.id,
+            "data": {
+                "id": proxy.id,
+                "name": proxy.name,
+                "provider": proxy.provider,
+                "status": proxy.status,
+                "port": proxy.port
+            }
+        }, user_id)
     
     return {
         "id": proxy.id,
@@ -381,6 +511,18 @@ async def start_proxy(
     
     # Start the proxy
     status = start_proxy_for_id(proxy_id)
+    
+    # Send WebSocket notification about proxy status change
+    # For simplicity, broadcast to all connected users for now
+    # In production, you'd want to send only to the specific user
+    for user_id in manager.active_connections.keys():
+        await manager.send_personal_message({
+            "type": "proxy_status_update",
+            "proxy_id": proxy_id,
+            "status": "running",
+            "data": status
+        }, user_id)
+    
     return status
 
 @app.post("/proxies/{proxy_id}/stop")
@@ -401,6 +543,17 @@ async def stop_proxy(
     
     # Stop the proxy
     status = stop_proxy_for_id(proxy_id)
+    
+    # Send WebSocket notification about proxy status change
+    # For simplicity, broadcast to all connected users for now
+    for user_id in manager.active_connections.keys():
+        await manager.send_personal_message({
+            "type": "proxy_status_update",
+            "proxy_id": proxy_id,
+            "status": "stopped",
+            "data": status
+        }, user_id)
+    
     return status
 
 @app.delete("/proxies/{proxy_id}")

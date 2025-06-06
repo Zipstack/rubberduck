@@ -4,6 +4,7 @@ import type { Proxy } from '../types';
 import ProxyCard from '../components/ProxyCard';
 import ProxyConfigModal from '../components/ProxyConfigModal';
 import { apiClient, ApiError } from '../utils/api';
+import { useWebSocket } from '../hooks/useWebSocket';
 
 const Proxies: React.FC = () => {
   const [proxies, setProxies] = useState<Proxy[]>([]);
@@ -14,10 +15,49 @@ const Proxies: React.FC = () => {
   const [selectedProxy, setSelectedProxy] = useState<Proxy | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<string>('');
   
   // Create proxy form state
   const [providers, setProviders] = useState<string[]>([]);
   const [isCreating, setIsCreating] = useState(false);
+  
+  // WebSocket connection for real-time updates
+  const token = localStorage.getItem('auth_token') || '';
+  const wsUrl = `ws://localhost:8000/ws/proxies`;
+  
+  const { isConnected } = useWebSocket(wsUrl, token, {
+    onMessage: (message) => {
+      if (message.type === 'proxy_status_update') {
+        // Update the specific proxy in the list
+        setProxies(prevProxies => 
+          prevProxies.map(proxy => 
+            proxy.id === message.proxy_id 
+              ? { ...proxy, status: message.status, ...message.data }
+              : proxy
+          )
+        );
+        setLastUpdated(new Date().toLocaleTimeString());
+        console.log('Proxy status updated via WebSocket:', message);
+      } else if (message.type === 'proxy_created') {
+        // Add new proxy to the list
+        setProxies(prevProxies => [...prevProxies, message.data]);
+        setLastUpdated(new Date().toLocaleTimeString());
+        console.log('New proxy created via WebSocket:', message);
+      } else if (message.type === 'connection_established') {
+        console.log('WebSocket connection established:', message.message);
+      }
+    },
+    onConnect: () => {
+      console.log('Connected to proxy status WebSocket');
+    },
+    onDisconnect: () => {
+      console.log('Disconnected from proxy status WebSocket');
+    },
+    onError: (error) => {
+      console.error('WebSocket error:', error);
+    }
+  });
+  
   const [formData, setFormData] = useState({
     name: '',
     provider: '',
@@ -176,9 +216,18 @@ const Proxies: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Proxies</h1>
-          <p className="text-gray-600 mt-1">
-            Manage your LLM proxy instances • {runningCount} running, {stoppedCount} stopped
-          </p>
+          <div className="flex items-center space-x-4 mt-1">
+            <p className="text-gray-600">
+              Manage your LLM proxy instances • {runningCount} running, {stoppedCount} stopped
+            </p>
+            <div className="flex items-center space-x-1 text-sm text-gray-500">
+              <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-400 animate-pulse' : 'bg-red-400'}`}></div>
+              <span>
+                {isConnected ? 'Live updates' : 'Disconnected'} 
+                {lastUpdated && ` • Updated ${lastUpdated}`}
+              </span>
+            </div>
+          </div>
         </div>
         <button
           onClick={handleOpenCreateModal}

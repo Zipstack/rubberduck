@@ -27,35 +27,59 @@ class ProxyManager:
         self.port_assignments: Dict[int, int] = {}  # port -> proxy_id
         self._lock = threading.Lock()
     
-    def find_available_port(self, preferred_port: Optional[int] = None) -> int:
+    def find_available_port(self, preferred_port: Optional[int] = None, strict_port: bool = False, current_proxy_id: Optional[int] = None) -> int:
         """
         Find an available port for a new proxy.
         
         Args:
             preferred_port: Try this port first if provided
+            strict_port: If True, only try the preferred port (for existing proxies)
+            current_proxy_id: ID of the proxy being started (to exclude from port conflict check)
             
         Returns:
             Available port number
             
         Raises:
-            RuntimeError: If no available port found
+            RuntimeError: If no available port found, or if strict_port=True and preferred_port unavailable
         """
-        # Check database for existing port assignments
+        # Check database for existing port assignments, excluding current proxy
         from ..database import SessionLocal
         from ..models import Proxy
         
         db = SessionLocal()
         try:
-            existing_ports = {proxy.port for proxy in db.query(Proxy).filter(Proxy.port.isnot(None)).all()}
+            query = db.query(Proxy).filter(Proxy.port.isnot(None))
+            if current_proxy_id:
+                query = query.filter(Proxy.id != current_proxy_id)
+            existing_ports = {proxy.port for proxy in query.all()}
         finally:
             db.close()
+        
+        if strict_port and preferred_port:
+            # For existing proxies, only try the assigned port
+            if (self._is_port_available(preferred_port) and 
+                preferred_port not in self.port_assignments and 
+                preferred_port not in existing_ports):
+                return preferred_port
+            else:
+                # Provide more detailed error message
+                conflicts = []
+                if not self._is_port_available(preferred_port):
+                    conflicts.append("port is in use by another process")
+                if preferred_port in self.port_assignments:
+                    conflicts.append(f"port is assigned to active proxy {self.port_assignments[preferred_port]}")
+                if preferred_port in existing_ports:
+                    conflicts.append("port is assigned to another proxy in database")
+                
+                error_msg = f"Cannot start proxy on assigned port {preferred_port}: {', '.join(conflicts)}"
+                raise RuntimeError(error_msg)
         
         ports_to_try = []
         
         if preferred_port:
             ports_to_try.append(preferred_port)
         
-        # Try ports in range 8001-9000
+        # Try ports in range 8001-9000 (only for new proxies)
         ports_to_try.extend(range(8001, 9001))
         
         for port in ports_to_try:
@@ -302,7 +326,10 @@ class ProxyManager:
                 raise RuntimeError(f"Proxy {proxy_id} is already running")
             
             # Find available port
-            assigned_port = self.find_available_port(port)
+            # If port is provided (existing proxy), use strict checking
+            # If port is None (new proxy), allow flexible port assignment
+            strict_mode = port is not None
+            assigned_port = self.find_available_port(port, strict_port=strict_mode, current_proxy_id=proxy_id)
             
             if assigned_port in self.port_assignments:
                 raise RuntimeError(f"Port {assigned_port} is already in use")
@@ -421,29 +448,48 @@ def start_proxy_for_id(proxy_id: int) -> dict:
     Raises:
         HTTPException: If proxy not found or start fails
     """
+    import logging
+    logger = logging.getLogger(__name__)
+    
     db = SessionLocal()
     try:
         proxy = db.query(Proxy).filter(Proxy.id == proxy_id).first()
         if not proxy:
             raise HTTPException(status_code=404, detail="Proxy not found")
         
-        # Start the proxy (don't pass the existing port to avoid conflicts)
-        port = proxy_manager.start_proxy(
-            proxy_id=proxy.id,
-            provider_name=proxy.provider,
-            port=None  # Let the manager find an available port
-        )
+        logger.info(f"Starting proxy {proxy_id} ({proxy.name}) on port {proxy.port or 'auto-assign'}")
         
-        # Update database with assigned port
-        proxy.port = port
-        proxy.status = "running"
-        db.commit()
+        # Start the proxy (try to use existing port if available)
+        try:
+            port = proxy_manager.start_proxy(
+                proxy_id=proxy.id,
+                provider_name=proxy.provider,
+                port=proxy.port  # Try to reuse the previously assigned port
+            )
+            
+            # Update database with assigned port (should be same as existing port for restarts)
+            proxy.port = port
+            proxy.status = "running"
+            db.commit()
+            
+            logger.info(f"Successfully started proxy {proxy_id} on port {port}")
+            return proxy_manager.get_proxy_status(proxy_id)
+            
+        except RuntimeError as e:
+            # Port conflict or other proxy start error
+            error_msg = str(e)
+            logger.error(f"Failed to start proxy {proxy_id}: {error_msg}")
+            
+            # Don't change the proxy status if it fails to start
+            raise HTTPException(status_code=409, detail=error_msg)
         
-        return proxy_manager.get_proxy_status(proxy_id)
-        
+    except HTTPException:
+        # Re-raise HTTP exceptions as-is
+        raise
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Unexpected error starting proxy {proxy_id}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
     finally:
         db.close()
 
