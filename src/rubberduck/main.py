@@ -111,7 +111,7 @@ class ConnectionManager:
                     "proxy_name": proxy_name,
                     "ip_address": log_entry.ip_address,
                     "status_code": log_entry.status_code,
-                    "latency": log_entry.latency,
+                    "latency": round(log_entry.latency, 2) if log_entry.latency is not None else None,
                     "cache_hit": log_entry.cache_hit,
                     "prompt_hash": log_entry.prompt_hash,
                     "failure_type": log_entry.failure_type,
@@ -124,7 +124,7 @@ class ConnectionManager:
                     "status": status,
                     "details": {
                         "status_code": log_entry.status_code,
-                        "latency": log_entry.latency,
+                        "latency": round(log_entry.latency, 2) if log_entry.latency is not None else None,
                         "cache_hit": log_entry.cache_hit
                     }
                 }
@@ -538,7 +538,7 @@ async def get_recent_activity(
                 "status": status,
                 "details": {
                     "status_code": log.status_code,
-                    "latency": log.latency,
+                    "latency": round(log.latency, 2) if log.latency is not None else None,
                     "cache_hit": log.cache_hit
                 }
             })
@@ -1025,7 +1025,7 @@ async def get_logs(
             "proxy_id": log.proxy_id,
             "ip_address": log.ip_address,
             "status_code": log.status_code,
-            "latency": log.latency,
+            "latency": round(log.latency, 2) if log.latency is not None else None,
             "cache_hit": log.cache_hit,
             "prompt_hash": log.prompt_hash,
             "failure_type": log.failure_type,
@@ -1058,7 +1058,7 @@ def _export_logs_csv(logs: List[LogEntry]) -> StreamingResponse:
             log.proxy_id,
             log.ip_address,
             log.status_code,
-            log.latency,
+            round(log.latency, 2) if log.latency is not None else "",
             log.cache_hit,
             log.prompt_hash or "",
             log.failure_type or "",
@@ -1090,7 +1090,7 @@ def _export_logs_json(logs: List[LogEntry]) -> Response:
             "proxy_id": log.proxy_id,
             "ip_address": log.ip_address,
             "status_code": log.status_code,
-            "latency": log.latency,
+            "latency": round(log.latency, 2) if log.latency is not None else None,
             "cache_hit": log.cache_hit,
             "prompt_hash": log.prompt_hash,
             "failure_type": log.failure_type,
