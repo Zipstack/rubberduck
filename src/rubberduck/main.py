@@ -157,6 +157,7 @@ class ConnectionManager:
             now = datetime.utcnow()
             last_24h = now - timedelta(hours=24)
             last_hour = now - timedelta(hours=1)
+            last_5_minutes = now - timedelta(minutes=5)  # For more accurate RPM calculation
             
             # Query recent logs for metrics
             recent_logs_query = db.query(LogEntry).filter(
@@ -179,9 +180,14 @@ class ConnectionManager:
             else:
                 error_rate = 0.0
             
-            # Calculate RPM (requests per minute based on last hour)
-            recent_hour_logs = [log for log in recent_logs if log.timestamp >= last_hour]
-            total_rpm = len(recent_hour_logs) / 60.0  # Divide by 60 to get per-minute rate
+            # Calculate RPM (requests per minute based on last 5 minutes for current activity)
+            recent_5min_logs = [log for log in recent_logs if log.timestamp >= last_5_minutes]
+            if recent_5min_logs:
+                # Calculate actual time span to account for partial minutes
+                time_span_minutes = max(5.0, (now - min(log.timestamp for log in recent_5min_logs)).total_seconds() / 60.0)
+                total_rpm = len(recent_5min_logs) / time_span_minutes
+            else:
+                total_rpm = 0.0
             
             # Calculate total cost (sum of cost field where available)
             total_cost = sum([log.cost for log in recent_logs if log.cost is not None])
@@ -193,9 +199,14 @@ class ConnectionManager:
             # Calculate per-proxy metrics
             proxy_metrics = []
             for proxy in user_proxies:
-                # Get logs for this specific proxy in the last hour
-                proxy_hour_logs = [log for log in recent_hour_logs if log.proxy_id == proxy.id]
-                proxy_rpm = len(proxy_hour_logs) / 60.0  # Divide by 60 to get per-minute rate
+                # Get logs for this specific proxy in the last 5 minutes
+                proxy_5min_logs = [log for log in recent_5min_logs if log.proxy_id == proxy.id]
+                if proxy_5min_logs:
+                    # Calculate actual time span for this proxy's logs
+                    proxy_time_span_minutes = max(5.0, (now - min(log.timestamp for log in proxy_5min_logs)).total_seconds() / 60.0)
+                    proxy_rpm = len(proxy_5min_logs) / proxy_time_span_minutes
+                else:
+                    proxy_rpm = 0.0
                 
                 proxy_metrics.append({
                     "proxy_id": proxy.id,
@@ -386,6 +397,7 @@ async def get_dashboard_metrics(
         now = datetime.utcnow()
         last_24h = now - timedelta(hours=24)
         last_hour = now - timedelta(hours=1)
+        last_5_minutes = now - timedelta(minutes=5)  # For more accurate RPM calculation
         
         # Query recent logs for metrics
         recent_logs_query = db.query(LogEntry).filter(
@@ -408,9 +420,14 @@ async def get_dashboard_metrics(
         else:
             error_rate = 0.0
         
-        # Calculate RPM (requests per minute based on last hour)
-        recent_hour_logs = [log for log in recent_logs if log.timestamp >= last_hour]
-        total_rpm = len(recent_hour_logs) / 60.0  # Divide by 60 to get per-minute rate
+        # Calculate RPM (requests per minute based on last 5 minutes for current activity)
+        recent_5min_logs = [log for log in recent_logs if log.timestamp >= last_5_minutes]
+        if recent_5min_logs:
+            # Calculate actual time span to account for partial minutes
+            time_span_minutes = max(5.0, (now - min(log.timestamp for log in recent_5min_logs)).total_seconds() / 60.0)
+            total_rpm = len(recent_5min_logs) / time_span_minutes
+        else:
+            total_rpm = 0.0
         
         # Calculate total cost (sum of cost field where available)
         total_cost = sum([log.cost for log in recent_logs if log.cost is not None])
@@ -422,9 +439,14 @@ async def get_dashboard_metrics(
         # Calculate per-proxy metrics
         proxy_metrics = []
         for proxy in user_proxies:
-            # Get logs for this specific proxy in the last hour
-            proxy_hour_logs = [log for log in recent_hour_logs if log.proxy_id == proxy.id]
-            proxy_rpm = len(proxy_hour_logs) / 60.0  # Divide by 60 to get per-minute rate
+            # Get logs for this specific proxy in the last 5 minutes
+            proxy_5min_logs = [log for log in recent_5min_logs if log.proxy_id == proxy.id]
+            if proxy_5min_logs:
+                # Calculate actual time span for this proxy's logs
+                proxy_time_span_minutes = max(5.0, (now - min(log.timestamp for log in proxy_5min_logs)).total_seconds() / 60.0)
+                proxy_rpm = len(proxy_5min_logs) / proxy_time_span_minutes
+            else:
+                proxy_rpm = 0.0
             
             proxy_metrics.append({
                 "proxy_id": proxy.id,
