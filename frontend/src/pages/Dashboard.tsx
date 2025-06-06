@@ -10,6 +10,7 @@ import {
 } from '@heroicons/react/24/outline';
 import type { DashboardStats, Proxy } from '../types';
 import { apiClient, ApiError } from '../utils/api';
+import { useWebSocket } from '../hooks/useWebSocket';
 
 const Dashboard: React.FC = () => {
   const [stats, setStats] = useState<DashboardStats>({
@@ -29,16 +30,62 @@ const Dashboard: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string>('');
 
+  // WebSocket connection for real-time updates
+  const token = localStorage.getItem('auth_token') || '';
+  const wsUrl = `ws://localhost:8000/ws/proxies`;
+  
+  const { isConnected, subscribe } = useWebSocket(wsUrl, token, {
+    onMessage: (message) => {
+      if (message.type === 'dashboard_update') {
+        // Update dashboard metrics in real-time
+        setStats(message.data);
+        setProxies(message.data.proxy_metrics || []);
+        setLastUpdated(new Date().toLocaleTimeString());
+        console.log('Dashboard updated via WebSocket:', message);
+      } else if (message.type === 'new_log_entry') {
+        // Add new log entry to recent activity
+        setRecentActivity(prevActivity => {
+          const newActivity = [message.data, ...prevActivity.slice(0, 4)]; // Keep only 5 items
+          return newActivity;
+        });
+        setLastUpdated(new Date().toLocaleTimeString());
+        console.log('New log entry received via WebSocket:', message);
+      } else if (message.type === 'connection_established') {
+        console.log('Dashboard WebSocket connection established');
+        // Subscribe to dashboard updates
+        subscribe('subscribe_dashboard');
+      }
+    },
+    onConnect: () => {
+      console.log('Connected to dashboard WebSocket');
+      // Subscribe to dashboard updates when connected
+      setTimeout(() => subscribe('subscribe_dashboard'), 100);
+    },
+    onDisconnect: () => {
+      console.log('Disconnected from dashboard WebSocket');
+    },
+    onError: (error) => {
+      console.error('Dashboard WebSocket error:', error);
+    }
+  });
+
   useEffect(() => {
     loadDashboardData();
     
-    // Refresh data every 5 seconds for real-time updates
-    const interval = setInterval(() => {
-      loadDashboardData();
-    }, 5000);
+    // Use WebSocket for real-time updates if connected, otherwise fall back to polling
+    let interval: NodeJS.Timeout | null = null;
+    
+    if (!isConnected) {
+      // Fallback: Refresh data every 10 seconds when WebSocket is not connected
+      interval = setInterval(() => {
+        loadDashboardData();
+      }, 10000);
+    }
 
-    return () => clearInterval(interval);
-  }, []);
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isConnected]);
 
   const loadDashboardData = async () => {
     setError(null);
@@ -136,13 +183,18 @@ const Dashboard: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-600 mt-1">Monitor your LLM proxy performance</p>
+          <div className="flex items-center space-x-4 mt-1">
+            <p className="text-gray-600">Monitor your LLM proxy performance</p>
+            <div className="flex items-center space-x-1 text-sm text-gray-500">
+              <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-400 animate-pulse' : 'bg-red-400'}`}></div>
+              <span>
+                {isConnected ? 'Live updates' : 'Disconnected'} 
+                {lastUpdated && ` • Updated ${lastUpdated}`}
+              </span>
+            </div>
+          </div>
         </div>
         <div className="flex items-center space-x-3">
-          <div className="flex items-center space-x-1 text-sm text-gray-500">
-            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-            <span>Live data{lastUpdated && ` • Updated ${lastUpdated}`}</span>
-          </div>
           <button
             onClick={loadDashboardData}
             disabled={isLoading}

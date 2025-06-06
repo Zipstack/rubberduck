@@ -57,6 +57,177 @@ class ConnectionManager:
             # Clean up disconnected connections
             for connection in disconnected:
                 self.active_connections[user_id].discard(connection)
+    
+    async def broadcast_to_all_users(self, message: dict):
+        """Broadcast a message to all connected users"""
+        for user_id in list(self.active_connections.keys()):
+            await self.send_personal_message(message, user_id)
+    
+    async def send_log_event(self, log_entry: LogEntry, user_id: str):
+        """Send a new log entry event to a specific user"""
+        # Get proxy info for the log
+        db = SessionLocal()
+        try:
+            proxy = db.query(Proxy).filter(Proxy.id == log_entry.proxy_id).first()
+            proxy_name = proxy.name if proxy else f"Proxy {log_entry.proxy_id}"
+            
+            # Determine event type and status
+            if log_entry.failure_type:
+                event = f"Failure: {log_entry.failure_type}"
+                status = "error"
+            elif log_entry.cache_hit:
+                event = "Cache hit"
+                status = "success"
+            elif log_entry.status_code >= 400:
+                event = f"Error {log_entry.status_code}"
+                status = "error"
+            elif log_entry.status_code >= 200:
+                event = "Request completed"
+                status = "success"
+            else:
+                event = "Request processed"
+                status = "info"
+            
+            # Calculate time ago
+            time_diff = datetime.utcnow() - log_entry.timestamp
+            if time_diff.total_seconds() < 60:
+                time_ago = "Just now"
+            elif time_diff.total_seconds() < 3600:
+                minutes = int(time_diff.total_seconds() / 60)
+                time_ago = f"{minutes} min ago"
+            elif time_diff.total_seconds() < 86400:
+                hours = int(time_diff.total_seconds() / 3600)
+                time_ago = f"{hours} hour{'s' if hours != 1 else ''} ago"
+            else:
+                days = int(time_diff.total_seconds() / 86400)
+                time_ago = f"{days} day{'s' if days != 1 else ''} ago"
+            
+            await self.send_personal_message({
+                "type": "new_log_entry",
+                "data": {
+                    "id": log_entry.id,
+                    "timestamp": log_entry.timestamp.isoformat() if log_entry.timestamp else None,
+                    "proxy_id": log_entry.proxy_id,
+                    "proxy_name": proxy_name,
+                    "ip_address": log_entry.ip_address,
+                    "status_code": log_entry.status_code,
+                    "latency": log_entry.latency,
+                    "cache_hit": log_entry.cache_hit,
+                    "prompt_hash": log_entry.prompt_hash,
+                    "failure_type": log_entry.failure_type,
+                    "token_usage": log_entry.token_usage,
+                    "cost": log_entry.cost,
+                    # Formatted data for dashboard
+                    "time": time_ago,
+                    "event": event,
+                    "proxy": proxy_name,
+                    "status": status,
+                    "details": {
+                        "status_code": log_entry.status_code,
+                        "latency": log_entry.latency,
+                        "cache_hit": log_entry.cache_hit
+                    }
+                }
+            }, user_id)
+        finally:
+            db.close()
+    
+    async def send_dashboard_update(self, user_id: str):
+        """Send updated dashboard metrics to a specific user"""
+        # Calculate fresh metrics
+        db = SessionLocal()
+        try:
+            # Get user from database (simplified approach)
+            user = db.query(User).first()  # For now, send to first user found
+            if not user:
+                return
+                
+            # Get user's proxies
+            user_proxies = db.query(Proxy).filter(Proxy.user_id == user.id).all()
+            
+            # Calculate basic proxy stats
+            total_proxies = len(user_proxies)
+            running_proxies = len([p for p in user_proxies if p.status == "running"])
+            stopped_proxies = total_proxies - running_proxies
+            
+            # Get proxy IDs for filtering logs
+            proxy_ids = [p.id for p in user_proxies]
+            
+            # Calculate time ranges
+            now = datetime.utcnow()
+            last_24h = now - timedelta(hours=24)
+            last_hour = now - timedelta(hours=1)
+            
+            # Query recent logs for metrics
+            recent_logs_query = db.query(LogEntry).filter(
+                LogEntry.proxy_id.in_(proxy_ids),
+                LogEntry.timestamp >= last_24h
+            )
+            recent_logs = recent_logs_query.all()
+            
+            # Calculate cache hit rate
+            if recent_logs:
+                cache_hits = len([log for log in recent_logs if log.cache_hit])
+                cache_hit_rate = (cache_hits / len(recent_logs)) * 100
+            else:
+                cache_hit_rate = 0.0
+            
+            # Calculate error rate
+            if recent_logs:
+                errors = len([log for log in recent_logs if log.status_code >= 400])
+                error_rate = (errors / len(recent_logs)) * 100
+            else:
+                error_rate = 0.0
+            
+            # Calculate RPM (requests per minute based on last hour)
+            recent_hour_logs = [log for log in recent_logs if log.timestamp >= last_hour]
+            total_rpm = len(recent_hour_logs) / 60.0  # Divide by 60 to get per-minute rate
+            
+            # Calculate total cost (sum of cost field where available)
+            total_cost = sum([log.cost for log in recent_logs if log.cost is not None])
+            
+            # Get in-flight requests from proxy manager
+            active_proxies = proxy_manager.list_active_proxies()
+            in_flight_requests = len(active_proxies)  # Simplified metric
+            
+            # Calculate per-proxy metrics
+            proxy_metrics = []
+            for proxy in user_proxies:
+                # Get logs for this specific proxy in the last hour
+                proxy_hour_logs = [log for log in recent_hour_logs if log.proxy_id == proxy.id]
+                proxy_rpm = len(proxy_hour_logs) / 60.0  # Divide by 60 to get per-minute rate
+                
+                proxy_metrics.append({
+                    "proxy_id": proxy.id,
+                    "name": proxy.name,
+                    "provider": proxy.provider,
+                    "status": proxy.status,
+                    "port": proxy.port,
+                    "rpm": round(proxy_rpm, 1)  # Round to 1 decimal place
+                })
+            
+            metrics_data = {
+                "total_proxies": total_proxies,
+                "running_proxies": running_proxies,
+                "stopped_proxies": stopped_proxies,
+                "cache_hit_rate": round(cache_hit_rate, 1),
+                "error_rate": round(error_rate, 1),
+                "total_rpm": round(total_rpm, 1),
+                "total_cost": round(total_cost, 2),
+                "in_flight_requests": in_flight_requests,
+                "proxy_metrics": proxy_metrics,
+                "last_updated": now.isoformat()
+            }
+            
+            await self.send_personal_message({
+                "type": "dashboard_update",
+                "data": metrics_data
+            }, user_id)
+            
+        except Exception as e:
+            logger.error(f"Error calculating dashboard metrics for WebSocket: {str(e)}")
+        finally:
+            db.close()
 
 manager = ConnectionManager()
 
@@ -386,12 +557,42 @@ async def websocket_endpoint(websocket: WebSocket, token: str = Query(...)):
                     "message": "Connected to proxy status updates"
                 }))
                 
-                # Keep connection alive
+                # Keep connection alive and handle subscription messages
                 while True:
                     data = await websocket.receive_text()
-                    # Handle ping/pong or other messages
+                    
+                    # Handle ping/pong
                     if data == "ping":
                         await websocket.send_text("pong")
+                        continue
+                    
+                    # Try to parse JSON messages
+                    try:
+                        message = json.loads(data)
+                        message_type = message.get("type")
+                        
+                        if message_type == "subscribe_dashboard":
+                            # Send initial dashboard data
+                            await manager.send_dashboard_update(user_id)
+                            
+                        elif message_type == "subscribe_logs":
+                            # Send a few recent log entries
+                            await websocket.send_text(json.dumps({
+                                "type": "logs_subscribed",
+                                "message": "Subscribed to real-time log updates"
+                            }))
+                            
+                        elif message_type == "unsubscribe":
+                            # Client can send unsubscribe messages if needed
+                            await websocket.send_text(json.dumps({
+                                "type": "unsubscribed",
+                                "message": "Unsubscribed from updates"
+                            }))
+                            
+                    except json.JSONDecodeError:
+                        # Not a JSON message, treat as plain text
+                        if data not in ["ping", "pong"]:
+                            logger.warning(f"Received non-JSON message: {data}")
                         
             except WebSocketDisconnect:
                 manager.disconnect(websocket, user_id)
@@ -522,6 +723,9 @@ async def start_proxy(
             "status": "running",
             "data": status
         }, user_id)
+        
+        # Also send dashboard update since proxy metrics changed
+        await manager.send_dashboard_update(user_id)
     
     return status
 
@@ -553,6 +757,9 @@ async def stop_proxy(
             "status": "stopped",
             "data": status
         }, user_id)
+        
+        # Also send dashboard update since proxy metrics changed
+        await manager.send_dashboard_update(user_id)
     
     return status
 

@@ -5,6 +5,7 @@ interface WebSocketMessage {
   proxy_id?: number;
   status?: string;
   data?: any;
+  message?: string;
 }
 
 interface UseWebSocketOptions {
@@ -91,8 +92,20 @@ export const useWebSocket = (url: string, token: string, options: UseWebSocketOp
 
   const sendMessage = (message: any) => {
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify(message));
+      if (typeof message === 'string') {
+        wsRef.current.send(message);
+      } else {
+        wsRef.current.send(JSON.stringify(message));
+      }
     }
+  };
+  
+  const subscribe = (subscriptionType: string) => {
+    sendMessage({ type: subscriptionType });
+  };
+  
+  const unsubscribe = () => {
+    sendMessage({ type: 'unsubscribe' });
   };
 
   useEffect(() => {
@@ -108,6 +121,8 @@ export const useWebSocket = (url: string, token: string, options: UseWebSocketOp
   return {
     isConnected,
     sendMessage,
+    subscribe,
+    unsubscribe,
     disconnect,
     reconnect: connect
   };

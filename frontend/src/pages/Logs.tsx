@@ -7,6 +7,7 @@ import {
 } from '@heroicons/react/24/outline';
 import type { LogEntry } from '../types';
 import { apiClient, ApiError } from '../utils/api';
+import { useWebSocket } from '../hooks/useWebSocket';
 
 const Logs: React.FC = () => {
   const [logs, setLogs] = useState<LogEntry[]>([]);
@@ -17,6 +18,60 @@ const Logs: React.FC = () => {
   const [isStreaming, setIsStreaming] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<string>('');
+
+  // WebSocket connection for real-time log streaming
+  const token = localStorage.getItem('auth_token') || '';
+  const wsUrl = `ws://localhost:8000/ws/proxies`;
+  
+  const { isConnected, subscribe, unsubscribe } = useWebSocket(wsUrl, token, {
+    onMessage: (message) => {
+      if (message.type === 'new_log_entry') {
+        // Add new log entry to the beginning of the list
+        setLogs(prevLogs => {
+          const newLog = message.data;
+          // Avoid duplicates by checking if log already exists
+          const exists = prevLogs.some(log => log.id === newLog.id);
+          if (!exists) {
+            return [newLog, ...prevLogs.slice(0, 99)]; // Keep only 100 most recent logs
+          }
+          return prevLogs;
+        });
+        setLastUpdated(new Date().toLocaleTimeString());
+        console.log('New log entry received via WebSocket:', message);
+      } else if (message.type === 'logs_subscribed') {
+        console.log('Subscribed to real-time log updates');
+        setIsStreaming(true);
+      } else if (message.type === 'connection_established') {
+        console.log('Logs WebSocket connection established');
+        // Subscribe to log updates
+        subscribe('subscribe_logs');
+      }
+    },
+    onConnect: () => {
+      console.log('Connected to logs WebSocket');
+      // Subscribe to log updates when connected
+      setTimeout(() => subscribe('subscribe_logs'), 100);
+    },
+    onDisconnect: () => {
+      console.log('Disconnected from logs WebSocket');
+      setIsStreaming(false);
+    },
+    onError: (error) => {
+      console.error('Logs WebSocket error:', error);
+      setIsStreaming(false);
+    }
+  });
+
+  const toggleStreaming = () => {
+    if (isStreaming) {
+      unsubscribe();
+      setIsStreaming(false);
+    } else {
+      subscribe('subscribe_logs');
+      setIsStreaming(true);
+    }
+  };
 
   useEffect(() => {
     loadLogs();
@@ -142,18 +197,28 @@ const Logs: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Logs</h1>
-          <p className="text-gray-600 mt-1">
-            Monitor request activity across all proxies • {filteredLogs.length} entries
-          </p>
+          <div className="flex items-center space-x-4 mt-1">
+            <p className="text-gray-600">
+              Monitor request activity across all proxies • {filteredLogs.length} entries
+            </p>
+            <div className="flex items-center space-x-1 text-sm text-gray-500">
+              <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-400 animate-pulse' : 'bg-red-400'}`}></div>
+              <span>
+                {isConnected ? 'Live connection' : 'Disconnected'} 
+                {lastUpdated && ` • Updated ${lastUpdated}`}
+              </span>
+            </div>
+          </div>
         </div>
         <div className="flex space-x-3">
           <button
-            onClick={() => setIsStreaming(!isStreaming)}
+            onClick={toggleStreaming}
+            disabled={!isConnected}
             className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
               isStreaming 
                 ? 'bg-red-100 text-red-700 hover:bg-red-200' 
                 : 'bg-green-100 text-green-700 hover:bg-green-200'
-            }`}
+            } ${!isConnected ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             <div className="flex items-center space-x-2">
               <div className={`w-2 h-2 rounded-full ${isStreaming ? 'bg-red-500 animate-pulse' : 'bg-gray-400'}`}></div>

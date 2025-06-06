@@ -75,6 +75,35 @@ class LoggingMiddleware:
             
             db.add(log_entry)
             db.commit()
+            db.refresh(log_entry)
+            
+            # Send WebSocket notification for real-time log updates
+            try:
+                # Import here to avoid circular imports
+                from ..main import manager
+                
+                # Get the user who owns this proxy to send targeted notification
+                from ..models import Proxy, User
+                proxy = db.query(Proxy).filter(Proxy.id == proxy_id).first()
+                if proxy:
+                    user = db.query(User).filter(User.id == proxy.user_id).first()
+                    if user:
+                        # Use a simplified user ID for WebSocket (in production, use proper JWT decoding)
+                        user_id = str(user.id)[:8]  # Use first 8 chars of user ID
+                        
+                        # Send log event asynchronously (fire and forget)
+                        import asyncio
+                        try:
+                            # Try to get the running event loop
+                            loop = asyncio.get_running_loop()
+                            # Schedule the coroutine
+                            loop.create_task(manager.send_log_event(log_entry, user_id))
+                        except RuntimeError:
+                            # No running event loop, skip WebSocket notification
+                            pass
+            except Exception as e:
+                # Don't fail the request if WebSocket notification fails
+                print(f"Warning: Failed to send WebSocket log notification: {e}")
             
         except Exception as e:
             db.rollback()
@@ -159,6 +188,35 @@ async def log_proxy_request(
         
         db.add(log_entry)
         db.commit()
+        db.refresh(log_entry)
+        
+        # Send WebSocket notification for real-time log updates
+        try:
+            # Import here to avoid circular imports
+            from ..main import manager
+            
+            # Get the user who owns this proxy to send targeted notification
+            from ..models import Proxy, User
+            proxy = db.query(Proxy).filter(Proxy.id == proxy_id).first()
+            if proxy:
+                user = db.query(User).filter(User.id == proxy.user_id).first()
+                if user:
+                    # Use a simplified user ID for WebSocket (in production, use proper JWT decoding)
+                    user_id = str(user.id)[:8]  # Use first 8 chars of user ID
+                    
+                    # Send log event asynchronously (fire and forget)
+                    import asyncio
+                    try:
+                        # Try to get the running event loop
+                        loop = asyncio.get_running_loop()
+                        # Schedule the coroutine
+                        loop.create_task(manager.send_log_event(log_entry, user_id))
+                    except RuntimeError:
+                        # No running event loop, skip WebSocket notification
+                        pass
+        except Exception as e:
+            # Don't fail the request if WebSocket notification fails
+            print(f"Warning: Failed to send WebSocket log notification: {e}")
         
     except Exception as e:
         db.rollback()
