@@ -6,6 +6,296 @@ import ProxyConfigModal from '../components/ProxyConfigModal';
 import { apiClient, ApiError } from '../utils/api';
 import { useWebSocket } from '../hooks/useWebSocket';
 
+const generateCurlExample = (proxy: Proxy): string => {
+  const baseUrl = `http://localhost:${proxy.port}`;
+  
+  switch (proxy.provider.toLowerCase()) {
+    case 'openai':
+      return `curl -X POST "${baseUrl}/v1/chat/completions" \\
+  -H "Content-Type: application/json" \\
+  -H "Authorization: Bearer YOUR_OPENAI_API_KEY" \\
+  -d '{
+    "model": "gpt-4",
+    "messages": [
+      {"role": "user", "content": "Hello, world!"}
+    ]
+  }'`;
+    
+    case 'anthropic':
+      return `curl -X POST "${baseUrl}/messages" \\
+  -H "Content-Type: application/json" \\
+  -H "x-api-key: YOUR_ANTHROPIC_API_KEY" \\
+  -H "anthropic-version: 2023-06-01" \\
+  -d '{
+    "model": "claude-3-sonnet-20240229",
+    "max_tokens": 1024,
+    "messages": [
+      {"role": "user", "content": "Hello, world!"}
+    ]
+  }'`;
+    
+    case 'azure_openai':
+      return `curl -X POST "${baseUrl}/openai/deployments/YOUR_DEPLOYMENT/chat/completions?api-version=2023-12-01-preview" \\
+  -H "Content-Type: application/json" \\
+  -H "api-key: YOUR_AZURE_API_KEY" \\
+  -d '{
+    "messages": [
+      {"role": "user", "content": "Hello, world!"}
+    ]
+  }'`;
+    
+    case 'bedrock':
+      return `curl -X POST "${baseUrl}/model/anthropic.claude-3-sonnet-20240229-v1:0/invoke" \\
+  -H "Content-Type: application/json" \\
+  -H "Authorization: AWS4-HMAC-SHA256 Credential=..." \\
+  -d '{
+    "anthropic_version": "bedrock-2023-05-31",
+    "max_tokens": 1024,
+    "messages": [
+      {"role": "user", "content": "Hello, world!"}
+    ]
+  }'`;
+    
+    case 'vertex_ai':
+      return `curl -X POST "${baseUrl}/projects/YOUR_PROJECT/locations/us-central1/publishers/google/models/gemini-pro:generateContent" \\
+  -H "Content-Type: application/json" \\
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \\
+  -d '{
+    "contents": [{
+      "parts": [{"text": "Hello, world!"}]
+    }]
+  }'`;
+    
+    default:
+      return `curl -X POST "${baseUrl}/your-endpoint" \\
+  -H "Content-Type: application/json" \\
+  -H "Authorization: Bearer YOUR_API_KEY" \\
+  -d '{"message": "Hello, world!"}'`;
+  }
+};
+
+const generatePythonExample = (proxy: Proxy): string => {
+  const baseUrl = `http://localhost:${proxy.port}`;
+  
+  switch (proxy.provider.toLowerCase()) {
+    case 'openai':
+      return `import openai
+
+client = openai.OpenAI(
+    api_key="YOUR_OPENAI_API_KEY",
+    base_url="${baseUrl}/v1"
+)
+
+response = client.chat.completions.create(
+    model="gpt-4",
+    messages=[
+        {"role": "user", "content": "Hello, world!"}
+    ]
+)
+print(response.choices[0].message.content)`;
+    
+    case 'anthropic':
+      return `import anthropic
+
+client = anthropic.Anthropic(
+    api_key="YOUR_ANTHROPIC_API_KEY",
+    base_url="${baseUrl}"
+)
+
+message = client.messages.create(
+    model="claude-3-sonnet-20240229",
+    max_tokens=1024,
+    messages=[
+        {"role": "user", "content": "Hello, world!"}
+    ]
+)
+print(message.content[0].text)`;
+    
+    case 'azure_openai':
+      return `import openai
+
+client = openai.AzureOpenAI(
+    azure_endpoint="${baseUrl}",
+    api_key="YOUR_AZURE_API_KEY",
+    api_version="2023-12-01-preview"
+)
+
+response = client.chat.completions.create(
+    model="YOUR_DEPLOYMENT_NAME",
+    messages=[
+        {"role": "user", "content": "Hello, world!"}
+    ]
+)
+print(response.choices[0].message.content)`;
+    
+    case 'bedrock':
+      return `import boto3
+import json
+
+client = boto3.client('bedrock-runtime',
+    region_name='us-east-1',
+    endpoint_url="${baseUrl}"
+)
+
+response = client.invoke_model(
+    modelId='anthropic.claude-3-sonnet-20240229-v1:0',
+    body=json.dumps({
+        "anthropic_version": "bedrock-2023-05-31",
+        "max_tokens": 1024,
+        "messages": [
+            {"role": "user", "content": "Hello, world!"}
+        ]
+    })
+)
+print(json.loads(response['body'].read())['content'][0]['text'])`;
+    
+    case 'vertex_ai':
+      return `import requests
+
+headers = {
+    'Authorization': 'Bearer YOUR_ACCESS_TOKEN',
+    'Content-Type': 'application/json'
+}
+
+data = {
+    'contents': [{
+        'parts': [{'text': 'Hello, world!'}]
+    }]
+}
+
+response = requests.post(
+    '${baseUrl}/projects/YOUR_PROJECT/locations/us-central1/publishers/google/models/gemini-pro:generateContent',
+    headers=headers,
+    json=data
+)
+print(response.json()['candidates'][0]['content']['parts'][0]['text'])`;
+    
+    default:
+      return `import requests
+
+response = requests.post('${baseUrl}/your-endpoint',
+    headers={
+        'Authorization': 'Bearer YOUR_API_KEY',
+        'Content-Type': 'application/json'
+    },
+    json={'message': 'Hello, world!'}
+)
+print(response.json())`;
+  }
+};
+
+const generateJavaScriptExample = (proxy: Proxy): string => {
+  const baseUrl = `http://localhost:${proxy.port}`;
+  
+  switch (proxy.provider.toLowerCase()) {
+    case 'openai':
+      return `import OpenAI from 'openai';
+
+const openai = new OpenAI({
+  apiKey: 'YOUR_OPENAI_API_KEY',
+  baseURL: '${baseUrl}/v1'
+});
+
+const response = await openai.chat.completions.create({
+  model: 'gpt-4',
+  messages: [
+    { role: 'user', content: 'Hello, world!' }
+  ]
+});
+
+console.log(response.choices[0].message.content);`;
+    
+    case 'anthropic':
+      return `import Anthropic from '@anthropic-ai/sdk';
+
+const anthropic = new Anthropic({
+  apiKey: 'YOUR_ANTHROPIC_API_KEY',
+  baseURL: '${baseUrl}'
+});
+
+const message = await anthropic.messages.create({
+  model: 'claude-3-sonnet-20240229',
+  max_tokens: 1024,
+  messages: [
+    { role: 'user', content: 'Hello, world!' }
+  ]
+});
+
+console.log(message.content[0].text);`;
+    
+    case 'azure_openai':
+      return `import { AzureOpenAI } from 'openai';
+
+const client = new AzureOpenAI({
+  endpoint: '${baseUrl}',
+  apiKey: 'YOUR_AZURE_API_KEY',
+  apiVersion: '2023-12-01-preview'
+});
+
+const response = await client.chat.completions.create({
+  model: 'YOUR_DEPLOYMENT_NAME',
+  messages: [
+    { role: 'user', content: 'Hello, world!' }
+  ]
+});
+
+console.log(response.choices[0].message.content);`;
+    
+    case 'bedrock':
+      return `import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime';
+
+const client = new BedrockRuntimeClient({
+  region: 'us-east-1',
+  endpoint: '${baseUrl}'
+});
+
+const command = new InvokeModelCommand({
+  modelId: 'anthropic.claude-3-sonnet-20240229-v1:0',
+  body: JSON.stringify({
+    anthropic_version: 'bedrock-2023-05-31',
+    max_tokens: 1024,
+    messages: [
+      { role: 'user', content: 'Hello, world!' }
+    ]
+  })
+});
+
+const response = await client.send(command);
+const result = JSON.parse(new TextDecoder().decode(response.body));
+console.log(result.content[0].text);`;
+    
+    case 'vertex_ai':
+      return `const response = await fetch('${baseUrl}/projects/YOUR_PROJECT/locations/us-central1/publishers/google/models/gemini-pro:generateContent', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_ACCESS_TOKEN',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    contents: [{
+      parts: [{ text: 'Hello, world!' }]
+    }]
+  })
+});
+
+const data = await response.json();
+console.log(data.candidates[0].content.parts[0].text);`;
+    
+    default:
+      return `const response = await fetch('${baseUrl}/your-endpoint', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({ message: 'Hello, world!' })
+});
+
+const data = await response.json();
+console.log(data);`;
+  }
+};
+
 const Proxies: React.FC = () => {
   const [proxies, setProxies] = useState<Proxy[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -16,47 +306,15 @@ const Proxies: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string>('');
+  const [showCodeModal, setShowCodeModal] = useState(false);
+  const [codeModalProxy, setCodeModalProxy] = useState<Proxy | null>(null);
   
   // Create proxy form state
   const [providers, setProviders] = useState<string[]>([]);
   const [isCreating, setIsCreating] = useState(false);
   
-  // WebSocket connection for real-time updates
-  const token = localStorage.getItem('auth_token') || '';
-  const wsUrl = `ws://localhost:8000/ws/proxies`;
-  
-  const { isConnected } = useWebSocket(wsUrl, token, {
-    onMessage: (message) => {
-      if (message.type === 'proxy_status_update') {
-        // Update the specific proxy in the list
-        setProxies(prevProxies => 
-          prevProxies.map(proxy => 
-            proxy.id === message.proxy_id 
-              ? { ...proxy, status: message.status, ...message.data }
-              : proxy
-          )
-        );
-        setLastUpdated(new Date().toLocaleTimeString());
-        console.log('Proxy status updated via WebSocket:', message);
-      } else if (message.type === 'proxy_created') {
-        // Add new proxy to the list
-        setProxies(prevProxies => [...prevProxies, message.data]);
-        setLastUpdated(new Date().toLocaleTimeString());
-        console.log('New proxy created via WebSocket:', message);
-      } else if (message.type === 'connection_established') {
-        console.log('WebSocket connection established:', message.message);
-      }
-    },
-    onConnect: () => {
-      console.log('Connected to proxy status WebSocket');
-    },
-    onDisconnect: () => {
-      console.log('Disconnected from proxy status WebSocket');
-    },
-    onError: (error) => {
-      console.error('WebSocket error:', error);
-    }
-  });
+  // WebSocket temporarily disabled - using polling instead
+  const isConnected = false;
   
   const [formData, setFormData] = useState({
     name: '',
@@ -158,6 +416,23 @@ const Proxies: React.FC = () => {
       port: ''
     });
     setShowCreateModal(true);
+  };
+
+  const handleClearProxyCache = async (proxy: Proxy) => {
+    try {
+      await apiClient.invalidateCache(proxy.id);
+      alert(`Cache cleared for ${proxy.name}`);
+    } catch (error) {
+      console.error('Failed to clear cache:', error);
+      if (error instanceof ApiError) {
+        alert(`Failed to clear cache: ${error.message}`);
+      }
+    }
+  };
+
+  const handleShowCode = (proxy: Proxy) => {
+    setCodeModalProxy(proxy);
+    setShowCodeModal(true);
   };
 
   const handleCloseCreateModal = () => {
@@ -346,6 +621,8 @@ const Proxies: React.FC = () => {
               onStop={handleStopProxy}
               onConfigure={handleConfigureProxy}
               onDelete={handleDeleteProxy}
+              onClearCache={handleClearProxyCache}
+              onShowCode={handleShowCode}
             />
           ))}
         </div>
@@ -485,6 +762,73 @@ const Proxies: React.FC = () => {
           }}
           onUpdate={loadProxies}
         />
+      )}
+
+      {/* Code Modal */}
+      {showCodeModal && codeModalProxy && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-900">
+                Code Examples - {codeModalProxy.name}
+              </h2>
+              <button
+                onClick={() => setShowCodeModal(false)}
+                className="text-gray-400 hover:text-gray-500"
+              >
+                <XMarkIcon className="h-6 w-6" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 space-y-6">
+              <p className="text-gray-600">
+                Here are code examples to connect to your {codeModalProxy.provider} proxy running on port {codeModalProxy.port}:
+              </p>
+
+              {/* cURL Example */}
+              <div>
+                <h3 className="text-md font-medium text-gray-900 mb-3">cURL</h3>
+                <div className="bg-gray-50 p-4 rounded-lg border">
+                  <pre className="text-sm overflow-x-auto">
+                    <code>{generateCurlExample(codeModalProxy)}</code>
+                  </pre>
+                </div>
+              </div>
+
+              {/* Python Example */}
+              <div>
+                <h3 className="text-md font-medium text-gray-900 mb-3">Python</h3>
+                <div className="bg-gray-50 p-4 rounded-lg border">
+                  <pre className="text-sm overflow-x-auto">
+                    <code>{generatePythonExample(codeModalProxy)}</code>
+                  </pre>
+                </div>
+              </div>
+
+              {/* JavaScript Example */}
+              <div>
+                <h3 className="text-md font-medium text-gray-900 mb-3">JavaScript</h3>
+                <div className="bg-gray-50 p-4 rounded-lg border">
+                  <pre className="text-sm overflow-x-auto">
+                    <code>{generateJavaScriptExample(codeModalProxy)}</code>
+                  </pre>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="flex items-center justify-end space-x-3 p-6 border-t border-gray-200">
+              <button
+                onClick={() => setShowCodeModal(false)}
+                className="btn-secondary"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

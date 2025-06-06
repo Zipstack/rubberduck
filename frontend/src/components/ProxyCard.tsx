@@ -5,6 +5,9 @@ import {
   CogIcon,
   TrashIcon,
   ExclamationTriangleIcon,
+  EllipsisVerticalIcon,
+  CommandLineIcon,
+  TrashIcon as CacheIcon,
 } from '@heroicons/react/24/outline';
 import type { Proxy } from '../types';
 
@@ -14,6 +17,8 @@ interface ProxyCardProps {
   onStop: (id: number) => void;
   onConfigure: (proxy: Proxy) => void;
   onDelete: (id: number) => void;
+  onClearCache: (proxy: Proxy) => void;
+  onShowCode: (proxy: Proxy) => void;
 }
 
 const ProxyCard: React.FC<ProxyCardProps> = ({
@@ -22,8 +27,11 @@ const ProxyCard: React.FC<ProxyCardProps> = ({
   onStop,
   onConfigure,
   onDelete,
+  onClearCache,
+  onShowCode,
 }) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [showActionsDropdown, setShowActionsDropdown] = useState(false);
 
   const handleAction = async (action: () => void) => {
     setIsLoading(true);
@@ -123,13 +131,51 @@ const ProxyCard: React.FC<ProxyCardProps> = ({
           </button>
         </div>
 
-        <button
-          onClick={() => onDelete(proxy.id)}
-          className="flex items-center space-x-1 px-3 py-1 bg-gray-50 text-gray-600 hover:bg-red-50 hover:text-red-700 rounded-md text-sm font-medium transition-colors"
-        >
-          <TrashIcon className="h-4 w-4" />
-          <span>Delete</span>
-        </button>
+        <div className="flex space-x-2">
+          {/* Actions Dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => setShowActionsDropdown(!showActionsDropdown)}
+              className="flex items-center space-x-1 px-3 py-1 bg-gray-50 text-gray-600 hover:bg-gray-100 rounded-md text-sm font-medium transition-colors"
+            >
+              <EllipsisVerticalIcon className="h-4 w-4" />
+              <span>Actions</span>
+            </button>
+            
+            {showActionsDropdown && (
+              <div className="absolute right-0 mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10">
+                <button
+                  onClick={() => {
+                    onClearCache(proxy);
+                    setShowActionsDropdown(false);
+                  }}
+                  className="w-full flex items-center space-x-2 px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
+                >
+                  <CacheIcon className="h-4 w-4" />
+                  <span>Clear Cache</span>
+                </button>
+                <button
+                  onClick={() => {
+                    onShowCode(proxy);
+                    setShowActionsDropdown(false);
+                  }}
+                  className="w-full flex items-center space-x-2 px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
+                >
+                  <CommandLineIcon className="h-4 w-4" />
+                  <span>Show Code</span>
+                </button>
+              </div>
+            )}
+          </div>
+
+          <button
+            onClick={() => onDelete(proxy.id)}
+            className="flex items-center space-x-1 px-3 py-1 bg-gray-50 text-gray-600 hover:bg-red-50 hover:text-red-700 rounded-md text-sm font-medium transition-colors"
+          >
+            <TrashIcon className="h-4 w-4" />
+            <span>Delete</span>
+          </button>
+        </div>
       </div>
 
       {/* Failure simulation indicator */}
