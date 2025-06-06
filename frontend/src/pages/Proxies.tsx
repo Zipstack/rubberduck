@@ -388,6 +388,10 @@ const Proxies: React.FC = () => {
   const [showCodeModal, setShowCodeModal] = useState(false);
   const [codeModalProxy, setCodeModalProxy] = useState<Proxy | null>(null);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [showCacheInfoModal, setShowCacheInfoModal] = useState(false);
+  const [cacheInfoProxy, setCacheInfoProxy] = useState<Proxy | null>(null);
+  const [cacheStats, setCacheStats] = useState<any>(null);
+  const [isLoadingCacheStats, setIsLoadingCacheStats] = useState(false);
   
   // Create proxy form state
   const [providers, setProviders] = useState<string[]>([]);
@@ -517,6 +521,22 @@ const Proxies: React.FC = () => {
     setShowCodeModal(true);
   };
 
+  const handleShowCacheInfo = async (proxy: Proxy) => {
+    setCacheInfoProxy(proxy);
+    setShowCacheInfoModal(true);
+    setIsLoadingCacheStats(true);
+    
+    try {
+      const stats = await apiClient.getCacheStats(proxy.id);
+      setCacheStats(stats);
+    } catch (error) {
+      console.error('Failed to load cache stats:', error);
+      setCacheStats({ error: 'Failed to load cache statistics' });
+    } finally {
+      setIsLoadingCacheStats(false);
+    }
+  };
+
   const copyToClipboard = async (code: string, language: string) => {
     try {
       await navigator.clipboard.writeText(code);
@@ -527,23 +547,29 @@ const Proxies: React.FC = () => {
     }
   };
 
-  // Handle ESC key to close code modal
+  // Handle ESC key to close modals
   useEffect(() => {
     const handleEscapeKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && showCodeModal) {
-        setShowCodeModal(false);
-        setCopiedCode(null);
+      if (event.key === 'Escape') {
+        if (showCodeModal) {
+          setShowCodeModal(false);
+          setCopiedCode(null);
+        }
+        if (showCacheInfoModal) {
+          setShowCacheInfoModal(false);
+          setCacheStats(null);
+        }
       }
     };
 
-    if (showCodeModal) {
+    if (showCodeModal || showCacheInfoModal) {
       document.addEventListener('keydown', handleEscapeKey);
     }
 
     return () => {
       document.removeEventListener('keydown', handleEscapeKey);
     };
-  }, [showCodeModal]);
+  }, [showCodeModal, showCacheInfoModal]);
 
   const handleCloseCreateModal = () => {
     setShowCreateModal(false);
@@ -732,6 +758,7 @@ const Proxies: React.FC = () => {
               onDelete={handleDeleteProxy}
               onClearCache={handleClearProxyCache}
               onShowCode={handleShowCode}
+              onShowCacheInfo={handleShowCacheInfo}
             />
           ))}
         </div>
@@ -925,6 +952,97 @@ const Proxies: React.FC = () => {
             <div className="flex items-center justify-end space-x-3 p-6 border-t border-gray-200">
               <button
                 onClick={() => setShowCodeModal(false)}
+                className="btn-secondary"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cache Info Modal */}
+      {showCacheInfoModal && cacheInfoProxy && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-900">
+                Cache Information - {cacheInfoProxy.name}
+              </h2>
+              <button
+                onClick={() => {
+                  setShowCacheInfoModal(false);
+                  setCacheStats(null);
+                }}
+                className="text-gray-400 hover:text-gray-500"
+              >
+                <XMarkIcon className="h-6 w-6" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6">
+              {isLoadingCacheStats ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                  <span className="ml-3 text-gray-600">Loading cache information...</span>
+                </div>
+              ) : cacheStats?.error ? (
+                <div className="text-center py-8">
+                  <div className="text-red-500 text-sm">{cacheStats.error}</div>
+                </div>
+              ) : cacheStats ? (
+                <div className="space-y-4">
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-gray-700">Cached Prompts</span>
+                      <span className="text-2xl font-bold text-blue-600">
+                        {cacheStats.cache_stats?.total_entries || 0}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {cacheStats.cache_stats?.total_size && (
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-gray-700">Cache Size</span>
+                        <span className="text-lg font-semibold text-gray-900">
+                          {(cacheStats.cache_stats.total_size / 1024 / 1024).toFixed(2)} MB
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {cacheStats.cache_stats?.hit_rate !== undefined && (
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-gray-700">Hit Rate</span>
+                        <span className="text-lg font-semibold text-green-600">
+                          {(cacheStats.cache_stats.hit_rate * 100).toFixed(1)}%
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div className="text-xs text-gray-500 text-center mt-4">
+                    Proxy running on port {cacheInfoProxy.port}
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <div className="text-gray-500 text-sm">No cache information available</div>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="flex items-center justify-end space-x-3 p-6 border-t border-gray-200">
+              <button
+                onClick={() => {
+                  setShowCacheInfoModal(false);
+                  setCacheStats(null);
+                }}
                 className="btn-secondary"
               >
                 Close

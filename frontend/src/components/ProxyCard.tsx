@@ -8,6 +8,7 @@ import {
   EllipsisVerticalIcon,
   CommandLineIcon,
   TrashIcon as CacheIcon,
+  InformationCircleIcon,
 } from '@heroicons/react/24/outline';
 import type { Proxy } from '../types';
 
@@ -19,6 +20,7 @@ interface ProxyCardProps {
   onDelete: (id: number) => void;
   onClearCache: (proxy: Proxy) => void;
   onShowCode: (proxy: Proxy) => void;
+  onShowCacheInfo: (proxy: Proxy) => void;
 }
 
 const ProxyCard: React.FC<ProxyCardProps> = ({
@@ -29,6 +31,7 @@ const ProxyCard: React.FC<ProxyCardProps> = ({
   onDelete,
   onClearCache,
   onShowCode,
+  onShowCacheInfo,
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [showActionsDropdown, setShowActionsDropdown] = useState(false);
@@ -144,6 +147,16 @@ const ProxyCard: React.FC<ProxyCardProps> = ({
             
             {showActionsDropdown && (
               <div className="absolute right-0 mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10">
+                <button
+                  onClick={() => {
+                    onShowCacheInfo(proxy);
+                    setShowActionsDropdown(false);
+                  }}
+                  className="w-full flex items-center space-x-2 px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
+                >
+                  <InformationCircleIcon className="h-4 w-4" />
+                  <span>Show Cache Info</span>
+                </button>
                 <button
                   onClick={() => {
                     onClearCache(proxy);

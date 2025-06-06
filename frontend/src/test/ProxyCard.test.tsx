@@ -20,6 +20,7 @@ const mockHandlers = {
   onDelete: vi.fn(),
   onClearCache: vi.fn(),
   onShowCode: vi.fn(),
+  onShowCacheInfo: vi.fn(),
 };
 
 describe('ProxyCard', () => {
