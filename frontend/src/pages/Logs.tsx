@@ -7,8 +7,11 @@ import {
 } from '@heroicons/react/24/outline';
 import type { LogEntry } from '../types';
 import { apiClient, ApiError } from '../utils/api';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 const Logs: React.FC = () => {
+  usePageTitle('Logs');
+  
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');

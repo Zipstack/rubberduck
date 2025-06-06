@@ -10,8 +10,11 @@ import {
 } from '@heroicons/react/24/outline';
 import type { DashboardStats } from '../types';
 import { apiClient, ApiError } from '../utils/api';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 const Dashboard: React.FC = () => {
+  usePageTitle('Dashboard');
+  
   const [stats, setStats] = useState<DashboardStats>({
     total_proxies: 0,
     running_proxies: 0,

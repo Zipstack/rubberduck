@@ -6,6 +6,7 @@ import type { Proxy } from '../types';
 import ProxyCard from '../components/ProxyCard';
 import ProxyConfigModal from '../components/ProxyConfigModal';
 import { apiClient, ApiError } from '../utils/api';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 const generateCurlExample = (proxy: Proxy): string => {
   const baseUrl = `http://localhost:${proxy.port}`;
@@ -374,6 +375,8 @@ const CodeBlock: React.FC<{
 };
 
 const Proxies: React.FC = () => {
+  usePageTitle('Proxies');
+  
   const [proxies, setProxies] = useState<Proxy[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
@@ -523,6 +526,24 @@ const Proxies: React.FC = () => {
       console.error('Failed to copy code:', error);
     }
   };
+
+  // Handle ESC key to close code modal
+  useEffect(() => {
+    const handleEscapeKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && showCodeModal) {
+        setShowCodeModal(false);
+        setCopiedCode(null);
+      }
+    };
+
+    if (showCodeModal) {
+      document.addEventListener('keydown', handleEscapeKey);
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscapeKey);
+    };
+  }, [showCodeModal]);
 
   const handleCloseCreateModal = () => {
     setShowCreateModal(false);

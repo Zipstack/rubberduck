@@ -7,8 +7,11 @@ import {
   TrashIcon,
 } from '@heroicons/react/24/outline';
 import { apiClient, ApiError } from '../utils/api';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 const Settings: React.FC = () => {
+  usePageTitle('Settings');
+  
   const [settings, setSettings] = useState({
     allowNewRegistrations: false,
     allowEmailPasswordLogin: true,
