@@ -137,13 +137,16 @@ class ConnectionManager:
         # Calculate fresh metrics
         db = SessionLocal()
         try:
-            # Get user from database (simplified approach)
-            user = db.query(User).first()  # For now, send to first user found
+            # For simplicity, get the first user and send their data
+            # In a production app, you'd properly map user_id to actual users
+            user = db.query(User).first()
             if not user:
+                logger.warning(f"No users found in database")
                 return
                 
             # Get user's proxies
             user_proxies = db.query(Proxy).filter(Proxy.user_id == user.id).all()
+            logger.info(f"Dashboard update for user {user_id}: found {len(user_proxies)} proxies")
             
             # Calculate basic proxy stats
             total_proxies = len(user_proxies)
@@ -157,7 +160,7 @@ class ConnectionManager:
             now = datetime.utcnow()
             last_24h = now - timedelta(hours=24)
             last_hour = now - timedelta(hours=1)
-            last_5_minutes = now - timedelta(minutes=5)  # For more accurate RPM calculation
+            last_minute = now - timedelta(minutes=1)  # For true RPM calculation
             
             # Query recent logs for metrics
             recent_logs_query = db.query(LogEntry).filter(
@@ -180,14 +183,9 @@ class ConnectionManager:
             else:
                 error_rate = 0.0
             
-            # Calculate RPM (requests per minute based on last 5 minutes for current activity)
-            recent_5min_logs = [log for log in recent_logs if log.timestamp >= last_5_minutes]
-            if recent_5min_logs:
-                # Calculate actual time span to account for partial minutes
-                time_span_minutes = max(5.0, (now - min(log.timestamp for log in recent_5min_logs)).total_seconds() / 60.0)
-                total_rpm = len(recent_5min_logs) / time_span_minutes
-            else:
-                total_rpm = 0.0
+            # Calculate RPM (requests per minute based on last 1 minute)
+            recent_1min_logs = [log for log in recent_logs if log.timestamp >= last_minute]
+            total_rpm = len(recent_1min_logs)  # Count of requests in the last minute = RPM
             
             # Calculate total cost (sum of cost field where available)
             total_cost = sum([log.cost for log in recent_logs if log.cost is not None])
@@ -199,17 +197,12 @@ class ConnectionManager:
             # Calculate per-proxy metrics
             proxy_metrics = []
             for proxy in user_proxies:
-                # Get logs for this specific proxy in the last 5 minutes
-                proxy_5min_logs = [log for log in recent_5min_logs if log.proxy_id == proxy.id]
-                if proxy_5min_logs:
-                    # Calculate actual time span for this proxy's logs
-                    proxy_time_span_minutes = max(5.0, (now - min(log.timestamp for log in proxy_5min_logs)).total_seconds() / 60.0)
-                    proxy_rpm = len(proxy_5min_logs) / proxy_time_span_minutes
-                else:
-                    proxy_rpm = 0.0
+                # Get logs for this specific proxy in the last 1 minute
+                proxy_1min_logs = [log for log in recent_1min_logs if log.proxy_id == proxy.id]
+                proxy_rpm = len(proxy_1min_logs)  # Count of requests in the last minute = RPM
                 
                 proxy_metrics.append({
-                    "proxy_id": proxy.id,
+                    "id": proxy.id,  # Frontend expects "id" not "proxy_id"
                     "name": proxy.name,
                     "provider": proxy.provider,
                     "status": proxy.status,
@@ -229,6 +222,8 @@ class ConnectionManager:
                 "proxy_metrics": proxy_metrics,
                 "last_updated": now.isoformat()
             }
+            
+            logger.info(f"Sending dashboard update with {len(proxy_metrics)} proxy metrics to user {user_id}")
             
             await self.send_personal_message({
                 "type": "dashboard_update",
@@ -397,7 +392,7 @@ async def get_dashboard_metrics(
         now = datetime.utcnow()
         last_24h = now - timedelta(hours=24)
         last_hour = now - timedelta(hours=1)
-        last_5_minutes = now - timedelta(minutes=5)  # For more accurate RPM calculation
+        last_minute = now - timedelta(minutes=1)  # For true RPM calculation
         
         # Query recent logs for metrics
         recent_logs_query = db.query(LogEntry).filter(
@@ -420,14 +415,9 @@ async def get_dashboard_metrics(
         else:
             error_rate = 0.0
         
-        # Calculate RPM (requests per minute based on last 5 minutes for current activity)
-        recent_5min_logs = [log for log in recent_logs if log.timestamp >= last_5_minutes]
-        if recent_5min_logs:
-            # Calculate actual time span to account for partial minutes
-            time_span_minutes = max(5.0, (now - min(log.timestamp for log in recent_5min_logs)).total_seconds() / 60.0)
-            total_rpm = len(recent_5min_logs) / time_span_minutes
-        else:
-            total_rpm = 0.0
+        # Calculate RPM (requests per minute based on last 1 minute)
+        recent_1min_logs = [log for log in recent_logs if log.timestamp >= last_minute]
+        total_rpm = len(recent_1min_logs)  # Count of requests in the last minute = RPM
         
         # Calculate total cost (sum of cost field where available)
         total_cost = sum([log.cost for log in recent_logs if log.cost is not None])
@@ -439,17 +429,12 @@ async def get_dashboard_metrics(
         # Calculate per-proxy metrics
         proxy_metrics = []
         for proxy in user_proxies:
-            # Get logs for this specific proxy in the last 5 minutes
-            proxy_5min_logs = [log for log in recent_5min_logs if log.proxy_id == proxy.id]
-            if proxy_5min_logs:
-                # Calculate actual time span for this proxy's logs
-                proxy_time_span_minutes = max(5.0, (now - min(log.timestamp for log in proxy_5min_logs)).total_seconds() / 60.0)
-                proxy_rpm = len(proxy_5min_logs) / proxy_time_span_minutes
-            else:
-                proxy_rpm = 0.0
+            # Get logs for this specific proxy in the last 1 minute
+            proxy_1min_logs = [log for log in recent_1min_logs if log.proxy_id == proxy.id]
+            proxy_rpm = len(proxy_1min_logs)  # Count of requests in the last minute = RPM
             
             proxy_metrics.append({
-                "proxy_id": proxy.id,
+                "id": proxy.id,  # Frontend expects "id" not "proxy_id"
                 "name": proxy.name,
                 "provider": proxy.provider,
                 "status": proxy.status,
@@ -560,74 +545,11 @@ async def health_check():
 async def protected_route(user: User = Depends(current_active_user)):
     return f"Hello {user.email}"
 
-# WebSocket endpoint for real-time proxy status updates
-@app.websocket("/ws/proxies")
-async def websocket_endpoint(websocket: WebSocket, token: str = Query(...)):
-    # Simple token validation and user connection
-    try:
-        if token and len(token) > 10:  # Basic token validation
-            # For this demo, we'll use a simplified approach
-            # In production, you'd decode the JWT and extract the actual user ID
-            user_id = token[:8]  # Use part of token as user identifier
-            await manager.connect(websocket, user_id)
-            logger.info(f"WebSocket connected for user {user_id}")
-            
-            try:
-                # Send initial connection confirmation
-                await websocket.send_text(json.dumps({
-                    "type": "connection_established",
-                    "message": "Connected to proxy status updates"
-                }))
-                
-                # Keep connection alive and handle subscription messages
-                while True:
-                    data = await websocket.receive_text()
-                    
-                    # Handle ping/pong
-                    if data == "ping":
-                        await websocket.send_text("pong")
-                        continue
-                    
-                    # Try to parse JSON messages
-                    try:
-                        message = json.loads(data)
-                        message_type = message.get("type")
-                        
-                        if message_type == "subscribe_dashboard":
-                            # Send initial dashboard data
-                            await manager.send_dashboard_update(user_id)
-                            
-                        elif message_type == "subscribe_logs":
-                            # Send a few recent log entries
-                            await websocket.send_text(json.dumps({
-                                "type": "logs_subscribed",
-                                "message": "Subscribed to real-time log updates"
-                            }))
-                            
-                        elif message_type == "unsubscribe":
-                            # Client can send unsubscribe messages if needed
-                            await websocket.send_text(json.dumps({
-                                "type": "unsubscribed",
-                                "message": "Unsubscribed from updates"
-                            }))
-                            
-                    except json.JSONDecodeError:
-                        # Not a JSON message, treat as plain text
-                        if data not in ["ping", "pong"]:
-                            logger.warning(f"Received non-JSON message: {data}")
-                        
-            except WebSocketDisconnect:
-                manager.disconnect(websocket, user_id)
-                logger.info(f"WebSocket disconnected for user {user_id}")
-        else:
-            await websocket.close(code=1008, reason="Invalid token")
-            
-    except Exception as e:
-        logger.error(f"WebSocket error: {str(e)}")
-        try:
-            await websocket.close(code=1011, reason="Internal error")
-        except:
-            pass
+# WebSocket endpoint temporarily disabled due to connection issues
+# TODO: Fix WebSocket implementation and re-enable
+# @app.websocket("/ws/proxies")
+# async def websocket_endpoint(websocket: WebSocket, token: str = Query(...)):
+#     # WebSocket implementation commented out
 
 # Proxy management endpoints
 @app.post("/proxies")
@@ -735,19 +657,8 @@ async def start_proxy(
     # Start the proxy
     status = start_proxy_for_id(proxy_id)
     
-    # Send WebSocket notification about proxy status change
-    # For simplicity, broadcast to all connected users for now
-    # In production, you'd want to send only to the specific user
-    for user_id in manager.active_connections.keys():
-        await manager.send_personal_message({
-            "type": "proxy_status_update",
-            "proxy_id": proxy_id,
-            "status": "running",
-            "data": status
-        }, user_id)
-        
-        # Also send dashboard update since proxy metrics changed
-        await manager.send_dashboard_update(user_id)
+    # WebSocket notifications temporarily disabled
+    # TODO: Re-enable when WebSocket implementation is fixed
     
     return status
 
@@ -770,18 +681,8 @@ async def stop_proxy(
     # Stop the proxy
     status = stop_proxy_for_id(proxy_id)
     
-    # Send WebSocket notification about proxy status change
-    # For simplicity, broadcast to all connected users for now
-    for user_id in manager.active_connections.keys():
-        await manager.send_personal_message({
-            "type": "proxy_status_update",
-            "proxy_id": proxy_id,
-            "status": "stopped",
-            "data": status
-        }, user_id)
-        
-        # Also send dashboard update since proxy metrics changed
-        await manager.send_dashboard_update(user_id)
+    # WebSocket notifications temporarily disabled
+    # TODO: Re-enable when WebSocket implementation is fixed
     
     return status
 
@@ -841,6 +742,41 @@ async def invalidate_cache(
         "message": f"Cache invalidated for proxy {proxy_id}",
         "entries_removed": deleted_count
     }
+
+@app.delete("/cache")
+async def clear_all_cache(
+    user: User = Depends(current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Clear all cache entries for the current user's proxies."""
+    logger.info(f"Clear cache request received for user {user.id}")
+    
+    try:
+        # Get user's proxy IDs
+        user_proxy_ids = [proxy.id for proxy in db.query(Proxy).filter(Proxy.user_id == user.id).all()]
+        logger.info(f"Found {len(user_proxy_ids)} proxies for user {user.id}")
+        
+        if not user_proxy_ids:
+            return {
+                "message": "No proxies found for user",
+                "entries_removed": 0
+            }
+        
+        # Clear cache for all user's proxies
+        total_deleted = 0
+        for proxy_id in user_proxy_ids:
+            deleted_count = cache_manager.invalidate_proxy_cache(proxy_id)
+            total_deleted += deleted_count
+            logger.info(f"Cleared {deleted_count} cache entries for proxy {proxy_id}")
+        
+        logger.info(f"Total cache entries cleared: {total_deleted}")
+        return {
+            "message": f"Cache cleared for all {len(user_proxy_ids)} proxies",
+            "entries_removed": total_deleted
+        }
+    except Exception as e:
+        logger.error(f"Error clearing cache: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to clear cache: {str(e)}")
 
 @app.get("/cache/{proxy_id}/stats")
 async def get_cache_stats(

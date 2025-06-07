@@ -9,7 +9,7 @@ class AnthropicProvider(BaseProvider):
     """
     
     def __init__(self):
-        super().__init__(name="anthropic", base_url="https://api.anthropic.com/v1")
+        super().__init__(name="anthropic", base_url="https://api.anthropic.com")
     
     def normalize_request(self, request_data: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -67,8 +67,13 @@ class AnthropicProvider(BaseProvider):
         elif "X-API-Key" in headers:
             api_headers["X-API-Key"] = headers["X-API-Key"]
         
+        # Normalize endpoint to ensure v1 prefix for actual Anthropic API
+        normalized_endpoint = endpoint
+        if not normalized_endpoint.startswith("/v1/"):
+            normalized_endpoint = f"/v1{normalized_endpoint}"
+        
         # Construct full URL
-        url = f"{self.base_url}{endpoint}"
+        url = f"{self.base_url}{normalized_endpoint}"
         
         # Make request to Anthropic API
         async with httpx.AsyncClient() as client:
@@ -110,11 +115,16 @@ class AnthropicProvider(BaseProvider):
     def get_supported_endpoints(self) -> list[str]:
         """
         Get list of supported Anthropic API endpoints.
+        Includes both direct endpoints and v1-prefixed endpoints for SDK compatibility.
         """
         return [
             "/messages",
-            "/complete",
-            "/models"
+            "/complete", 
+            "/models",
+            # v1 endpoints for official Anthropic SDK compatibility
+            "/v1/messages",
+            "/v1/complete",
+            "/v1/models"
         ]
     
     def transform_error_response(self, error_response: Dict[str, Any], status_code: int) -> Dict[str, Any]:
