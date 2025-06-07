@@ -179,9 +179,15 @@ class FailureSimulator:
         if not config.error_injection_enabled:
             return None
         
-        # Check each configured error rate
+        # Generate a single random value to check against all error rates
+        # This ensures we get proper probability distribution
+        random_value = random.random()
+        
+        # Calculate cumulative probability and check each error rate
+        cumulative_prob = 0.0
         for status_code, rate in config.error_rates.items():
-            if random.random() <= rate:
+            cumulative_prob += rate
+            if random_value <= cumulative_prob:
                 # Simulate this error
                 error_messages = {
                     400: "Bad Request - Simulated Error",

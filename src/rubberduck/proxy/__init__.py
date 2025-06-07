@@ -118,21 +118,13 @@ class ProxyManager:
         except KeyError:
             raise ValueError(f"Unknown provider: {provider_name}")
         
-        # Get failure configuration from database
-        db = SessionLocal()
-        try:
-            proxy_record = db.query(Proxy).filter(Proxy.id == proxy_id).first()
-            failure_config = FailureConfig.from_json(proxy_record.failure_config if proxy_record else None)
-        finally:
-            db.close()
-        
         # Create dynamic endpoints for all supported provider endpoints
         for endpoint in provider.get_supported_endpoints():
-            self._create_proxy_endpoint(app, endpoint, provider, proxy_id, failure_config)
+            self._create_proxy_endpoint(app, endpoint, provider, proxy_id)
         
         return app
     
-    def _create_proxy_endpoint(self, app: FastAPI, endpoint: str, provider, proxy_id: int, failure_config: FailureConfig):
+    def _create_proxy_endpoint(self, app: FastAPI, endpoint: str, provider, proxy_id: int):
         """
         Create a proxy endpoint that forwards requests to the LLM provider.
         """
@@ -147,6 +139,14 @@ class ProxyManager:
             failure_type = None
             request_data = None
             response = None
+            
+            # Get latest failure configuration from database for each request
+            db = SessionLocal()
+            try:
+                proxy_record = db.query(Proxy).filter(Proxy.id == proxy_id).first()
+                failure_config = FailureConfig.from_json(proxy_record.failure_config if proxy_record else None)
+            finally:
+                db.close()
             
             try:
                 # Apply failure simulation first
@@ -206,8 +206,49 @@ class ProxyManager:
                     cache_key = cache_manager.generate_cache_key(proxy_id, normalized_request)
                     cached_response = cache_manager.get_cached_response(proxy_id, cache_key)
                 
+                # NOTE: We intentionally check cache AFTER error simulation
+                # This ensures error injection applies to ALL requests, including cache hits
+                # A 50% error rate should fail 50% of requests regardless of caching
                 if cached_response:
-                    # Create cache hit response
+                    # Even for cache hits, we need to apply error simulation
+                    # to ensure the configured error rate applies to ALL requests
+                    cache_failure_error = await failure_simulator.process_request(
+                        config=failure_config,
+                        proxy_id=proxy_id,
+                        request=request
+                    )
+                    
+                    if cache_failure_error:
+                        # Determine failure type for cache hit that gets error injection
+                        if cache_failure_error.status_code == 403 and "blocked" in cache_failure_error.detail.lower():
+                            failure_type = "ip_blocked"
+                        elif cache_failure_error.status_code == 429 and "rate limit" in cache_failure_error.detail.lower():
+                            failure_type = "rate_limited"
+                        elif "timeout" in cache_failure_error.detail.lower():
+                            failure_type = "timeout"
+                        else:
+                            failure_type = "error_injection"
+                        
+                        # Create failure response instead of cache hit
+                        response = JSONResponse(
+                            content={"error": {"message": cache_failure_error.detail, "type": "simulated_failure"}},
+                            status_code=cache_failure_error.status_code
+                        )
+                        
+                        # Log the failure (cache hit that was converted to error)
+                        await log_proxy_request(
+                            proxy_id=proxy_id,
+                            request=request,
+                            response=response,
+                            start_time=start_time,
+                            cache_hit=False,  # Log as non-cache since we're returning an error
+                            failure_type=failure_type,
+                            request_data=request_data
+                        )
+                        
+                        return response
+                    
+                    # No error injection, proceed with cache hit response
                     cache_hit = True
                     
                     # Filter out problematic headers from cached response too
