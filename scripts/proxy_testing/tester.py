@@ -188,6 +188,104 @@ class SeedDataLoader:
         
         else:
             raise ValueError(f"Invalid selection mode: {selection_mode}")
+    
+    def generate_unique_data(self, selection_mode: str, num_requests: int) -> List[Tuple[str, str]]:
+        """Generate data for requests with maximum sentence uniqueness."""
+        if selection_mode == "single-file":
+            # Pick one random file and maximize sentence uniqueness within it
+            chosen_file = random.choice(self.files)
+            prompt, sentences = self._parse_file(chosen_file)
+            
+            if not sentences:
+                console.print(f"[red]No sentences found in {chosen_file.name}[/red]")
+                sys.exit(1)
+            
+            console.print(f"[cyan]Using file: {chosen_file.name} ({len(sentences)} unique sentences available)[/cyan]")
+            
+            # Create list of all available (prompt, sentence) pairs
+            available_pairs = [(prompt, sentence) for sentence in sentences]
+            
+            # Generate data with maximum uniqueness
+            result = []
+            used_sentences = set()
+            
+            for i in range(num_requests):
+                # First, try to get unused sentences
+                unused_pairs = [pair for pair in available_pairs if pair[1] not in used_sentences]
+                
+                if unused_pairs:
+                    # Pick randomly from unused sentences
+                    chosen_pair = random.choice(unused_pairs)
+                    used_sentences.add(chosen_pair[1])
+                    result.append(chosen_pair)
+                else:
+                    # All sentences used, pick randomly from all (but track for stats)
+                    chosen_pair = random.choice(available_pairs)
+                    result.append(chosen_pair)
+            
+            unique_count = len(used_sentences)
+            repeat_count = num_requests - unique_count
+            
+            if repeat_count > 0:
+                console.print(f"[yellow]Used {unique_count} unique sentences, {repeat_count} repeated sentences[/yellow]")
+            else:
+                console.print(f"[green]All {unique_count} sentences are unique![/green]")
+            
+            return result
+        
+        elif selection_mode == "all-files":
+            # Parse all files and maximize uniqueness across all files
+            file_data = {}
+            total_sentences = 0
+            
+            for file_path in self.files:
+                prompt, sentences = self._parse_file(file_path)
+                if sentences:
+                    file_data[file_path] = (prompt, sentences)
+                    total_sentences += len(sentences)
+            
+            if not file_data:
+                console.print("[red]No valid files with sentences found[/red]")
+                sys.exit(1)
+            
+            console.print(f"[cyan]Using {len(file_data)} files ({total_sentences} unique sentences available)[/cyan]")
+            
+            # Create list of all available (prompt, sentence) pairs from all files
+            available_pairs = []
+            for file_path, (prompt, sentences) in file_data.items():
+                for sentence in sentences:
+                    available_pairs.append((prompt, sentence))
+            
+            # Generate data with maximum uniqueness
+            result = []
+            used_sentences = set()
+            
+            for i in range(num_requests):
+                # First, try to get unused sentences
+                unused_pairs = [pair for pair in available_pairs if pair[1] not in used_sentences]
+                
+                if unused_pairs:
+                    # Pick randomly from unused sentences
+                    chosen_pair = random.choice(unused_pairs)
+                    used_sentences.add(chosen_pair[1])
+                    result.append(chosen_pair)
+                else:
+                    # All sentences used, pick randomly from all
+                    chosen_pair = random.choice(available_pairs)
+                    result.append(chosen_pair)
+            
+            unique_count = len(used_sentences)
+            repeat_count = num_requests - unique_count
+            
+            if repeat_count > 0:
+                console.print(f"[yellow]Used {unique_count} unique sentences, {repeat_count} repeated sentences[/yellow]")
+            else:
+                console.print(f"[green]All {unique_count} sentences are unique![/green]")
+            
+            return result
+        
+        else:
+            raise ValueError(f"Invalid selection mode: {selection_mode}")
 
 
 class ProviderClient:
@@ -420,15 +518,13 @@ def get_api_key(provider: str, provided_key: Optional[str]) -> str:
 def send_single_request(
     request_id: int,
     client_func,
-    data_iterator: Iterator[Tuple[str, str]],
+    payload: str,
     json_response: bool,
     log_file_handle=None,
     lock=None
 ) -> Tuple[int, str, float, int]:
     """Send a single request and return the results."""
     try:
-        prompt, sentence = next(data_iterator)
-        payload = f"{prompt}\n\n{sentence}"
         
         # Send request with timing
         start_time = time.perf_counter()
@@ -611,7 +707,6 @@ def main(
     try:
         # Test proxy connectivity
         seed_loader = SeedDataLoader(data_dir)
-        data_iterator = seed_loader.get_iterator(selection_mode)
         client_func = ProviderClient.create_client(provider, model, api_key_resolved, proxy_url, timeout)
         metrics = MetricsRecorder()
         
@@ -623,6 +718,15 @@ def main(
         # Thread lock for log file writing
         lock = threading.Lock() if log_file_handle else None
         
+        # Generate unique data pairs to maximize sentence diversity
+        data_pairs = seed_loader.generate_unique_data(selection_mode, num_requests)
+        
+        # Pre-generate all payloads
+        payloads = []
+        for prompt, sentence in data_pairs:
+            payload = f"{prompt}\n\n{sentence}"
+            payloads.append(payload)
+        
         # Concurrent request execution
         if concurrency == 1:
             # Sequential execution (no threading overhead)
@@ -630,7 +734,7 @@ def main(
                 console.print(f"[blue]Request {i+1}/{num_requests}[/blue]", end="")
                 
                 request_id, status_code, latency_ms, response_bytes = send_single_request(
-                    i + 1, client_func, data_iterator, json_response, log_file_handle, lock
+                    i + 1, client_func, payloads[i], json_response, log_file_handle, lock
                 )
                 
                 # Record metrics
@@ -643,13 +747,13 @@ def main(
         else:
             # Concurrent execution using ThreadPoolExecutor
             with ThreadPoolExecutor(max_workers=concurrency) as executor:
-                # Submit all requests
+                # Submit all requests with pre-generated payloads
                 future_to_id = {
                     executor.submit(
                         send_single_request, 
                         i + 1, 
                         client_func, 
-                        data_iterator, 
+                        payloads[i], 
                         json_response, 
                         log_file_handle, 
                         lock
