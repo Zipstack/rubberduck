@@ -17,9 +17,7 @@
     "claude-3-opus-20240229",
     "claude-3-sonnet-20240229",
     "claude-3-haiku-20240307",
-    "claude-2.1",
-    "claude-instant-1.2",
-    "claude-instant-1.2-100k"
+    "claude-2.1"
   ],
   "azure-openai": [
     "gpt-4o",
@@ -55,9 +53,9 @@
   ],
   "deepseek": [
     "deepseek-chat",
+    "deepseek-reasoner",
     "deepseek-coder",
     "deepseek-coder-v2",
-    "deepseek-math",
-    "deepseek-llm"
+    "deepseek-math"
   ]
 }

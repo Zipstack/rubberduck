@@ -68,6 +68,17 @@ const generateCurlExample = (proxy: Proxy): string => {
     }]
   }'`;
     
+    case 'deepseek':
+      return `curl -X POST "${baseUrl}/v1/chat/completions" \\
+  -H "Content-Type: application/json" \\
+  -H "Authorization: Bearer \${DEEPSEEK_API_KEY:-YOUR_DEEPSEEK_API_KEY}" \\
+  -d '{
+    "model": "deepseek-chat",
+    "messages": [
+      {"role": "user", "content": "Hello, world!"}
+    ]
+  }'`;
+    
     default:
       return `curl -X POST "${baseUrl}/your-endpoint" \\
   -H "Content-Type: application/json" \\
@@ -179,6 +190,23 @@ response = requests.post(
     json=data
 )
 print(response.json()['candidates'][0]['content']['parts'][0]['text'])`;
+    
+    case 'deepseek':
+      return `import os
+import openai
+
+client = openai.OpenAI(
+    api_key=os.getenv("DEEPSEEK_API_KEY", "YOUR_DEEPSEEK_API_KEY"),
+    base_url="${baseUrl}/v1"
+)
+
+response = client.chat.completions.create(
+    model="deepseek-chat",
+    messages=[
+        {"role": "user", "content": "Hello, world!"}
+    ]
+)
+print(response.choices[0].message.content)`;
     
     default:
       return `import os
@@ -298,6 +326,23 @@ const response = await fetch(\`\${baseUrl}/projects/\${project}/locations/us-cen
 
 const data = await response.json();
 console.log(data.candidates[0].content.parts[0].text);`;
+    
+    case 'deepseek':
+      return `import OpenAI from 'openai';
+
+const openai = new OpenAI({
+  apiKey: process.env.DEEPSEEK_API_KEY || 'YOUR_DEEPSEEK_API_KEY',
+  baseURL: '${baseUrl}/v1'
+});
+
+const response = await openai.chat.completions.create({
+  model: 'deepseek-chat',
+  messages: [
+    { role: 'user', content: 'Hello, world!' }
+  ]
+});
+
+console.log(response.choices[0].message.content);`;
     
     default:
       return `const response = await fetch('${baseUrl}/your-endpoint', {

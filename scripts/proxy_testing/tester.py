@@ -13,6 +13,9 @@ import random
 import sys
 import time
 import statistics
+import asyncio
+import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import List, Dict, Any, Tuple, Optional, Iterator
 
@@ -414,6 +417,55 @@ def get_api_key(provider: str, provided_key: Optional[str]) -> str:
     sys.exit(1)
 
 
+def send_single_request(
+    request_id: int,
+    client_func,
+    data_iterator: Iterator[Tuple[str, str]],
+    json_response: bool,
+    log_file_handle=None,
+    lock=None
+) -> Tuple[int, str, float, int]:
+    """Send a single request and return the results."""
+    try:
+        prompt, sentence = next(data_iterator)
+        payload = f"{prompt}\n\n{sentence}"
+        
+        # Send request with timing
+        start_time = time.perf_counter()
+        status_code, response = client_func(payload)
+        end_time = time.perf_counter()
+        
+        latency_ms = (end_time - start_time) * 1000
+        
+        # Calculate response size
+        if status_code != "EXC":
+            if json_response:
+                response_bytes = len(json.dumps(str(response)))
+            else:
+                response_bytes = len(str(response))
+        else:
+            response_bytes = len(str(response))
+        
+        # Log raw JSON if requested (with thread safety)
+        if json_response and log_file_handle and lock:
+            log_entry = {
+                "request_id": request_id,
+                "status_code": status_code,
+                "latency_ms": latency_ms,
+                "response": str(response) if status_code != "EXC" else None,
+                "error": str(response) if status_code == "EXC" else None
+            }
+            with lock:
+                log_file_handle.write(json.dumps(log_entry) + "\n")
+                log_file_handle.flush()
+        
+        return request_id, status_code, latency_ms, response_bytes
+        
+    except Exception as e:
+        # Handle any exceptions in the request
+        return request_id, "EXC", 0.0, len(str(e))
+
+
 def render_summary(summary: Dict[str, Any], output_format: str) -> str:
     """Render summary in the specified format."""
     if output_format == "json":
@@ -457,7 +509,8 @@ def render_summary(summary: Dict[str, Any], output_format: str) -> str:
 def main(
     provider: Optional[str] = typer.Option(None, "-p", "--provider", help="LLM provider"),
     model: Optional[str] = typer.Option(None, "-m", "--model", help="Model name"),
-    num_requests: int = typer.Option(1, "-n", "--num-requests", help="Number of requests"),
+    num_requests: Optional[int] = typer.Option(None, "-n", "--num-requests", help="Number of requests"),
+    concurrency: Optional[int] = typer.Option(None, "-c", "--concurrency", help="Number of concurrent requests"),
     data_dir: str = typer.Option("./unstructured_data", "-d", "--data-dir", help="Seed data directory"),
     selection_mode: str = typer.Option("single-file", "-s", "--selection-mode", help="single-file or all-files"),
     log_file: Optional[str] = typer.Option(None, "-l", "--log-file", help="Log file path"),
@@ -511,6 +564,32 @@ def main(
         console.print(f"[red]Model {model} not available for {provider}[/red]")
         sys.exit(1)
     
+    # Number of requests selection (interactive only)
+    if interactive and num_requests is None:
+        num_requests_choice = questionary.select(
+            "Number of requests to send:",
+            choices=["1", "5", "10", "25", "50", "100"]
+        ).ask()
+        if num_requests_choice:
+            num_requests = int(num_requests_choice)
+    
+    # Set default if still None
+    if num_requests is None:
+        num_requests = 1
+    
+    # Concurrency selection (interactive only)
+    if interactive and concurrency is None:
+        concurrency_choice = questionary.select(
+            "Number of concurrent requests:",
+            choices=["1", "5", "10"]
+        ).ask()
+        if concurrency_choice:
+            concurrency = int(concurrency_choice)
+    
+    # Set default if still None
+    if concurrency is None:
+        concurrency = 1
+    
     # Selection mode (interactive only)
     if interactive and selection_mode == "single-file":
         mode_choice = questionary.select(
@@ -525,9 +604,9 @@ def main(
     
     # Initialize components
     if proxy_url is None:
-        console.print(f"[cyan]Starting load test: {provider}/{model} with {num_requests} requests (direct connection)[/cyan]")
+        console.print(f"[cyan]Starting load test: {provider}/{model} with {num_requests} requests, concurrency: {concurrency} (direct connection)[/cyan]")
     else:
-        console.print(f"[cyan]Starting load test: {provider}/{model} with {num_requests} requests via proxy {proxy_url}[/cyan]")
+        console.print(f"[cyan]Starting load test: {provider}/{model} with {num_requests} requests, concurrency: {concurrency} via proxy {proxy_url}[/cyan]")
     
     try:
         # Test proxy connectivity
@@ -541,52 +620,59 @@ def main(
         if log_file:
             log_file_handle = open(log_file, 'a', encoding='utf-8')
         
-        # Main request loop
-        for i in range(num_requests):
-            prompt, sentence = next(data_iterator)
-            payload = f"{prompt}\n\n{sentence}"
-            
-            console.print(f"[blue]Request {i+1}/{num_requests}[/blue]", end="")
-            
-            # Send request with timing
-            start_time = time.perf_counter()
-            status_code, response = client_func(payload)
-            end_time = time.perf_counter()
-            
-            latency_ms = (end_time - start_time) * 1000
-            
-            # Calculate response size
-            if status_code != "EXC":
-                if json_response:
-                    response_bytes = len(json.dumps(str(response)))
+        # Thread lock for log file writing
+        lock = threading.Lock() if log_file_handle else None
+        
+        # Concurrent request execution
+        if concurrency == 1:
+            # Sequential execution (no threading overhead)
+            for i in range(num_requests):
+                console.print(f"[blue]Request {i+1}/{num_requests}[/blue]", end="")
+                
+                request_id, status_code, latency_ms, response_bytes = send_single_request(
+                    i + 1, client_func, data_iterator, json_response, log_file_handle, lock
+                )
+                
+                # Record metrics
+                metrics.record(status_code, latency_ms, response_bytes)
+                
+                if status_code == "EXC":
+                    console.print(f" - {status_code} ({latency_ms:.2f}ms) - Error occurred")
                 else:
-                    response_bytes = len(str(response))
-            else:
-                response_bytes = len(str(response))
-            
-            # Record metrics
-            metrics.record(status_code, latency_ms, response_bytes)
-            
-            if status_code == "EXC":
-                # Truncate very long error messages for console output
-                error_msg = str(response)
-                if len(error_msg) > 100:
-                    error_msg = error_msg[:97] + "..."
-                console.print(f" - {status_code} ({latency_ms:.2f}ms) - {error_msg}")
-            else:
-                console.print(f" - {status_code} ({latency_ms:.2f}ms)")
-            
-            # Log raw JSON if requested
-            if json_response and log_file_handle:
-                log_entry = {
-                    "request_id": i + 1,
-                    "status_code": status_code,
-                    "latency_ms": latency_ms,
-                    "response": str(response) if status_code != "EXC" else None,
-                    "error": str(response) if status_code == "EXC" else None
+                    console.print(f" - {status_code} ({latency_ms:.2f}ms)")
+        else:
+            # Concurrent execution using ThreadPoolExecutor
+            with ThreadPoolExecutor(max_workers=concurrency) as executor:
+                # Submit all requests
+                future_to_id = {
+                    executor.submit(
+                        send_single_request, 
+                        i + 1, 
+                        client_func, 
+                        data_iterator, 
+                        json_response, 
+                        log_file_handle, 
+                        lock
+                    ): i + 1 for i in range(num_requests)
                 }
-                log_file_handle.write(json.dumps(log_entry) + "\n")
-                log_file_handle.flush()
+                
+                # Process completed requests
+                completed_count = 0
+                for future in as_completed(future_to_id):
+                    completed_count += 1
+                    request_id = future_to_id[future]
+                    
+                    try:
+                        req_id, status_code, latency_ms, response_bytes = future.result()
+                        
+                        # Record metrics
+                        metrics.record(status_code, latency_ms, response_bytes)
+                        
+                        console.print(f"[blue]Request {completed_count}/{num_requests} (ID: {req_id})[/blue] - {status_code} ({latency_ms:.2f}ms)")
+                        
+                    except Exception as e:
+                        console.print(f"[red]Request {request_id} failed: {e}[/red]")
+                        metrics.record("EXC", 0.0, len(str(e)))
         
         # Generate and display summary
         summary = metrics.get_summary()
