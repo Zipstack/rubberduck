@@ -1,0 +1,210 @@
+### Prompt
+You will receive one descriptive snippet. Parse it and return **only** JSON that fits this schema exactly:
+{
+  "project_name": "string",
+  "primary_language": "string",
+  "initial_release_year": "number",
+  "github_stars": "number",
+  "lead_maintainer_org": "string"
+}
+---
+
+First appearing in 2024, DataWeave—written mainly in C#—has earned 284k+ GitHub stars and is guided by the an independent maintainer team.
+
+Released circa 2001, DataWeave (mostly JavaScript) racks up 106k+ GitHub stars while the Eclipse Foundation keeps it moving.
+
+StreamForge hit version 1.0 in 2015. Crafted with Dart, it now boasts 237k+ GitHub stars and sits under the care of the Eclipse Foundation.
+
+Released circa 2023, HyperScript (mostly C++) racks up 139k+ GitHub stars while the Canonical keeps it moving.
+
+StreamForge hit version 1.0 in 2003. Crafted with Swift, it now boasts 60,245 stars on GitHub and sits under the care of the Linux Foundation.
+
+Released circa 2004, Vue.js (mostly Swift) racks up 4,430 stars on GitHub while the Canonical keeps it moving.
+
+First appearing in 2013, Quantumix—written mainly in Swift—has earned 32,286 stars on GitHub and is guided by the Apache Foundation.
+
+Kubernetes hit version 1.0 in 2009. Crafted with Swift, it now boasts 143k+ GitHub stars and sits under the care of the an independent maintainer team.
+
+GraphJet hit version 1.0 in 2016. Crafted with Dart, it now boasts 123k+ GitHub stars and sits under the care of the Eclipse Foundation.
+
+First appearing in 2009, GraphJet—written mainly in C#—has earned 250k+ GitHub stars and is guided by the Eclipse Foundation.
+
+First appearing in 2022, Vue.js—written mainly in JavaScript—has earned 22,486 stars on GitHub and is guided by the Linux Foundation.
+
+TensorFlow hit version 1.0 in 2014. Crafted with Python, it now boasts 213k+ GitHub stars and sits under the care of the an independent maintainer team.
+
+DataWeave hit version 1.0 in 2023. Crafted with Go, it now boasts 77,382 stars on GitHub and sits under the care of the Eclipse Foundation.
+
+Released circa 2003, React (mostly Kotlin) racks up 279k+ GitHub stars while the Canonical keeps it moving.
+
+First appearing in 2006, DataWeave—written mainly in Ruby—has earned 152k+ GitHub stars and is guided by the Linux Foundation.
+
+First appearing in 2020, Quantumix—written mainly in Go—has earned 248k+ GitHub stars and is guided by the a community collective.
+
+Kubernetes hit version 1.0 in 2005. Crafted with C#, it now boasts 142k+ GitHub stars and sits under the care of the an independent maintainer team.
+
+HyperScript hit version 1.0 in 2022. Crafted with Python, it now boasts 30,296 stars on GitHub and sits under the care of the a community collective.
+
+Released circa 2009, React (mostly Python) racks up 8,398 stars on GitHub while the Eclipse Foundation keeps it moving.
+
+Released circa 2016, HyperScript (mostly Elixir) racks up 239k+ GitHub stars while the a community collective keeps it moving.
+
+Released circa 2006, HyperScript (mostly Julia) racks up 169k+ GitHub stars while the a community collective keeps it moving.
+
+Kubernetes hit version 1.0 in 2007. Crafted with TypeScript, it now boasts 9,142 stars on GitHub and sits under the care of the Apache Foundation.
+
+Released circa 2015, React (mostly Ruby) racks up 11,268 stars on GitHub while the Apache Foundation keeps it moving.
+
+Released circa 2007, RustyDB (mostly Python) racks up 69,733 stars on GitHub while the Linux Foundation keeps it moving.
+
+First appearing in 2002, TensorFlow—written mainly in Go—has earned 271k+ GitHub stars and is guided by the Eclipse Foundation.
+
+Released circa 2012, Kubernetes (mostly Rust) racks up 257k+ GitHub stars while the a community collective keeps it moving.
+
+GraphJet hit version 1.0 in 2008. Crafted with JavaScript, it now boasts 236k+ GitHub stars and sits under the care of the Eclipse Foundation.
+
+First appearing in 2022, HyperScript—written mainly in Kotlin—has earned 84,019 stars on GitHub and is guided by the Linux Foundation.
+
+GraphJet hit version 1.0 in 2017. Crafted with Swift, it now boasts 35,689 stars on GitHub and sits under the care of the a community collective.
+
+HyperScript hit version 1.0 in 2011. Crafted with JavaScript, it now boasts 128k+ GitHub stars and sits under the care of the a community collective.
+
+First appearing in 2016, Quantumix—written mainly in JavaScript—has earned 93,923 stars on GitHub and is guided by the Canonical.
+
+Released circa 2011, Kubernetes (mostly Go) racks up 125k+ GitHub stars while the Linux Foundation keeps it moving.
+
+Released circa 2012, RustyDB (mostly PHP) racks up 112k+ GitHub stars while the an independent maintainer team keeps it moving.
+
+GraphJet hit version 1.0 in 2008. Crafted with Python, it now boasts 5,796 stars on GitHub and sits under the care of the an independent maintainer team.
+
+React hit version 1.0 in 2013. Crafted with Ruby, it now boasts 206k+ GitHub stars and sits under the care of the Linux Foundation.
+
+Released circa 2003, Kubernetes (mostly Elixir) racks up 135k+ GitHub stars while the Apache Foundation keeps it moving.
+
+First appearing in 2003, TensorFlow—written mainly in C#—has earned 264k+ GitHub stars and is guided by the a community collective.
+
+First appearing in 2001, TensorFlow—written mainly in JavaScript—has earned 184k+ GitHub stars and is guided by the Canonical.
+
+First appearing in 2011, HyperScript—written mainly in JavaScript—has earned 258k+ GitHub stars and is guided by the a community collective.
+
+Released circa 2017, TensorFlow (mostly Julia) racks up 21,977 stars on GitHub while the Apache Foundation keeps it moving.
+
+Released circa 2012, TensorFlow (mostly Python) racks up 187k+ GitHub stars while the an independent maintainer team keeps it moving.
+
+First appearing in 2009, TensorFlow—written mainly in Julia—has earned 190k+ GitHub stars and is guided by the Canonical.
+
+DataWeave hit version 1.0 in 2015. Crafted with C#, it now boasts 149k+ GitHub stars and sits under the care of the a community collective.
+
+First appearing in 2016, StreamForge—written mainly in JavaScript—has earned 155k+ GitHub stars and is guided by the an independent maintainer team.
+
+First appearing in 2001, TensorFlow—written mainly in Julia—has earned 243k+ GitHub stars and is guided by the an independent maintainer team.
+
+First appearing in 2015, DataWeave—written mainly in Dart—has earned 50,277 stars on GitHub and is guided by the Canonical.
+
+First appearing in 2016, Vue.js—written mainly in Dart—has earned 207k+ GitHub stars and is guided by the Linux Foundation.
+
+React hit version 1.0 in 2019. Crafted with Python, it now boasts 83,472 stars on GitHub and sits under the care of the Linux Foundation.
+
+Released circa 2003, GraphJet (mostly Julia) racks up 85,448 stars on GitHub while the Canonical keeps it moving.
+
+First appearing in 2008, RustyDB—written mainly in Elixir—has earned 258k+ GitHub stars and is guided by the an independent maintainer team.
+
+First appearing in 2008, Vue.js—written mainly in Ruby—has earned 246k+ GitHub stars and is guided by the Linux Foundation.
+
+GraphJet hit version 1.0 in 2016. Crafted with Go, it now boasts 254k+ GitHub stars and sits under the care of the an independent maintainer team.
+
+First appearing in 2019, RustyDB—written mainly in Julia—has earned 161k+ GitHub stars and is guided by the Canonical.
+
+GraphJet hit version 1.0 in 2013. Crafted with Swift, it now boasts 17,576 stars on GitHub and sits under the care of the Linux Foundation.
+
+Released circa 2003, DataWeave (mostly Go) racks up 247k+ GitHub stars while the an independent maintainer team keeps it moving.
+
+StreamForge hit version 1.0 in 2001. Crafted with Ruby, it now boasts 250k+ GitHub stars and sits under the care of the an independent maintainer team.
+
+Kubernetes hit version 1.0 in 2000. Crafted with Go, it now boasts 156k+ GitHub stars and sits under the care of the Linux Foundation.
+
+Released circa 2002, HyperScript (mostly Go) racks up 291k+ GitHub stars while the an independent maintainer team keeps it moving.
+
+First appearing in 2005, HyperScript—written mainly in Dart—has earned 45,976 stars on GitHub and is guided by the Apache Foundation.
+
+First appearing in 2024, Quantumix—written mainly in C#—has earned 245k+ GitHub stars and is guided by the a community collective.
+
+Released circa 2005, Vue.js (mostly Rust) racks up 244k+ GitHub stars while the Linux Foundation keeps it moving.
+
+Released circa 2024, React (mostly Ruby) racks up 111k+ GitHub stars while the Linux Foundation keeps it moving.
+
+Released circa 2022, Kubernetes (mostly Kotlin) racks up 228k+ GitHub stars while the an independent maintainer team keeps it moving.
+
+First appearing in 2005, Vue.js—written mainly in C#—has earned 97,146 stars on GitHub and is guided by the Linux Foundation.
+
+Vue.js hit version 1.0 in 2013. Crafted with Go, it now boasts 296k+ GitHub stars and sits under the care of the Linux Foundation.
+
+First appearing in 2017, React—written mainly in Ruby—has earned 120k+ GitHub stars and is guided by the Eclipse Foundation.
+
+StreamForge hit version 1.0 in 2003. Crafted with Go, it now boasts 123k+ GitHub stars and sits under the care of the an independent maintainer team.
+
+GraphJet hit version 1.0 in 2005. Crafted with TypeScript, it now boasts 187k+ GitHub stars and sits under the care of the Linux Foundation.
+
+RustyDB hit version 1.0 in 2019. Crafted with C#, it now boasts 208k+ GitHub stars and sits under the care of the an independent maintainer team.
+
+Released circa 2011, HyperScript (mostly Elixir) racks up 191k+ GitHub stars while the an independent maintainer team keeps it moving.
+
+First appearing in 2005, StreamForge—written mainly in Go—has earned 272k+ GitHub stars and is guided by the a community collective.
+
+Released circa 2022, RustyDB (mostly Elixir) racks up 175k+ GitHub stars while the Eclipse Foundation keeps it moving.
+
+Released circa 2007, GraphJet (mostly Ruby) racks up 116k+ GitHub stars while the Apache Foundation keeps it moving.
+
+First appearing in 2004, Vue.js—written mainly in Julia—has earned 233k+ GitHub stars and is guided by the Linux Foundation.
+
+Released circa 2008, RustyDB (mostly Kotlin) racks up 264k+ GitHub stars while the Linux Foundation keeps it moving.
+
+First appearing in 2020, DataWeave—written mainly in C#—has earned 104k+ GitHub stars and is guided by the an independent maintainer team.
+
+Released circa 2021, Quantumix (mostly Go) racks up 109k+ GitHub stars while the Apache Foundation keeps it moving.
+
+Released circa 2022, RustyDB (mostly Go) racks up 41,739 stars on GitHub while the a community collective keeps it moving.
+
+RustyDB hit version 1.0 in 2018. Crafted with Julia, it now boasts 143k+ GitHub stars and sits under the care of the an independent maintainer team.
+
+First appearing in 2024, HyperScript—written mainly in Rust—has earned 64,436 stars on GitHub and is guided by the Linux Foundation.
+
+Released circa 2005, DataWeave (mostly Swift) racks up 101k+ GitHub stars while the an independent maintainer team keeps it moving.
+
+DataWeave hit version 1.0 in 2002. Crafted with JavaScript, it now boasts 85,045 stars on GitHub and sits under the care of the Apache Foundation.
+
+GraphJet hit version 1.0 in 2002. Crafted with TypeScript, it now boasts 44,831 stars on GitHub and sits under the care of the Apache Foundation.
+
+First appearing in 2003, HyperScript—written mainly in Dart—has earned 136k+ GitHub stars and is guided by the a community collective.
+
+Released circa 2015, Kubernetes (mostly TypeScript) racks up 283k+ GitHub stars while the Linux Foundation keeps it moving.
+
+Released circa 2012, Kubernetes (mostly Julia) racks up 283k+ GitHub stars while the Eclipse Foundation keeps it moving.
+
+First appearing in 2006, RustyDB—written mainly in JavaScript—has earned 122k+ GitHub stars and is guided by the an independent maintainer team.
+
+Released circa 2007, DataWeave (mostly Rust) racks up 136k+ GitHub stars while the Eclipse Foundation keeps it moving.
+
+React hit version 1.0 in 2014. Crafted with Kotlin, it now boasts 110k+ GitHub stars and sits under the care of the an independent maintainer team.
+
+Released circa 2019, GraphJet (mostly C++) racks up 81,809 stars on GitHub while the Eclipse Foundation keeps it moving.
+
+Quantumix hit version 1.0 in 2006. Crafted with TypeScript, it now boasts 5,844 stars on GitHub and sits under the care of the Apache Foundation.
+
+TensorFlow hit version 1.0 in 2001. Crafted with Julia, it now boasts 55,657 stars on GitHub and sits under the care of the Linux Foundation.
+
+First appearing in 2016, RustyDB—written mainly in Go—has earned 248k+ GitHub stars and is guided by the a community collective.
+
+TensorFlow hit version 1.0 in 2019. Crafted with Python, it now boasts 96,444 stars on GitHub and sits under the care of the Canonical.
+
+Released circa 2019, StreamForge (mostly Rust) racks up 77,844 stars on GitHub while the Eclipse Foundation keeps it moving.
+
+First appearing in 2002, GraphJet—written mainly in C#—has earned 4,884 stars on GitHub and is guided by the Apache Foundation.
+
+First appearing in 2017, RustyDB—written mainly in C++—has earned 70,850 stars on GitHub and is guided by the Linux Foundation.
+
+First appearing in 2013, StreamForge—written mainly in TypeScript—has earned 5,526 stars on GitHub and is guided by the a community collective.
+
+GraphJet hit version 1.0 in 2021. Crafted with Swift, it now boasts 242k+ GitHub stars and sits under the care of the Canonical.
+
+Released circa 2003, GraphJet (mostly Python) racks up 109k+ GitHub stars while the Eclipse Foundation keeps it moving.

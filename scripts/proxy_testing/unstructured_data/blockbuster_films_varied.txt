@@ -1,0 +1,210 @@
+### Prompt
+You will receive one descriptive snippet. Parse it and return **only** JSON that fits this schema exactly:
+{
+  "title": "string",
+  "release_year": "number",
+  "director": "string",
+  "box_office_usd_billion": "number",
+  "genre": "string"
+}
+---
+
+Jordan White's Infinity Quest hit theatres in 1994; it went on to post around 1.33 billion USD, a record for biographical films.
+
+Robin Wilson's Eternal Echoes hit theatres in 1988; it went on to post around 2.42 billion USD, a record for fantasy films.
+
+Directed by Dakota Miller, the 2007 blockbuster Silver Skies brought a around 2.13 billion USD worldwide, cementing its place in animation.
+
+Silver Skies—a drama epic helmed by Dakota Garcia—premiered in 2007 and raked in 2.4 billion‑dollar haul.
+
+Directed by Jordan Smith, the 1994 blockbuster Neon Mirage brought a 2.47 billion‑dollar haul worldwide, cementing its place in science‑fiction.
+
+Directed by Robin Smith, the 1986 blockbuster Crimson Tide brought a 2.73 billion‑dollar haul worldwide, cementing its place in fantasy.
+
+Directed by Jordan Johnson, the 1999 blockbuster Shadow Realm brought a around 0.84 billion USD worldwide, cementing its place in science‑fiction.
+
+Directed by Adrian Johnson, the 2001 blockbuster Silver Skies brought a around 2.31 billion USD worldwide, cementing its place in fantasy.
+
+Cameron Johnson's Infinity Quest hit theatres in 2021; it went on to post 2.77 billion‑dollar haul, a record for action films.
+
+Directed by Morgan Brown, the 1989 blockbuster Eternal Echoes brought a around 1.55 billion USD worldwide, cementing its place in action.
+
+Infinity Quest—a superhero epic helmed by Bailey Brown—premiered in 2004 and raked in around 1.62 billion USD.
+
+Directed by Jamie Thomas, the 1982 blockbuster Bright Horizon brought a around 2.27 billion USD worldwide, cementing its place in musical.
+
+Adrian Thomas's Infinity Quest hit theatres in 2001; it went on to post 1.2 billion‑dollar haul, a record for science‑fiction films.
+
+Drew Jones's Silver Skies hit theatres in 1996; it went on to post 1.93 billion‑dollar haul, a record for adventure films.
+
+Silver Skies—a adventure epic helmed by Riley Davis—premiered in 1990 and raked in around 0.74 billion USD.
+
+Directed by Morgan Williams, the 1987 blockbuster Galactic Dawn brought a around 1.29 billion USD worldwide, cementing its place in thriller.
+
+Robin Jackson's Lost Empire hit theatres in 1996; it went on to post around 1.04 billion USD, a record for drama films.
+
+Directed by Dakota Smith, the 1988 blockbuster Silver Skies brought a 0.95 billion‑dollar haul worldwide, cementing its place in musical.
+
+Casey Garcia's Crimson Tide hit theatres in 1997; it went on to post 2.44 billion‑dollar haul, a record for animation films.
+
+Sydney White's Infinity Quest hit theatres in 1993; it went on to post 1.58 billion‑dollar haul, a record for superhero films.
+
+Cameron Martin's Eternal Echoes hit theatres in 2001; it went on to post 2.69 billion‑dollar haul, a record for animation films.
+
+Sydney Brown's Eternal Echoes hit theatres in 1974; it went on to post around 1.08 billion USD, a record for biographical films.
+
+Directed by Jordan Davis, the 1970 blockbuster Neon Mirage brought a around 1.86 billion USD worldwide, cementing its place in musical.
+
+Directed by Robin Garcia, the 1973 blockbuster Neon Mirage brought a 2.27 billion‑dollar haul worldwide, cementing its place in musical.
+
+Shadow Realm—a thriller epic helmed by Cameron Jones—premiered in 1977 and raked in 1.52 billion‑dollar haul.
+
+Shadow Realm—a science‑fiction epic helmed by Drew Brown—premiered in 1981 and raked in 2.19 billion‑dollar haul.
+
+Morgan Anderson's Lost Empire hit theatres in 2015; it went on to post around 0.7 billion USD, a record for musical films.
+
+Directed by Morgan Johnson, the 2023 blockbuster Silver Skies brought a 1.31 billion‑dollar haul worldwide, cementing its place in thriller.
+
+Directed by Dakota Garcia, the 1978 blockbuster Crimson Tide brought a 2.22 billion‑dollar haul worldwide, cementing its place in adventure.
+
+Jordan Martin's Shadow Realm hit theatres in 1974; it went on to post around 1.23 billion USD, a record for adventure films.
+
+Drew Garcia's Shadow Realm hit theatres in 2023; it went on to post 1.22 billion‑dollar haul, a record for animation films.
+
+Infinity Quest—a action epic helmed by Dakota Anderson—premiered in 1979 and raked in around 1.55 billion USD.
+
+Dakota Williams's Silver Skies hit theatres in 1984; it went on to post around 1.34 billion USD, a record for animation films.
+
+Jordan Wilson's Crimson Tide hit theatres in 2004; it went on to post around 2.39 billion USD, a record for biographical films.
+
+Dana Wilson's Silent Storm hit theatres in 2018; it went on to post 1.42 billion‑dollar haul, a record for biographical films.
+
+Dakota Jones's Shadow Realm hit theatres in 2014; it went on to post around 1.41 billion USD, a record for thriller films.
+
+Directed by Riley Jackson, the 1970 blockbuster Bright Horizon brought a 1.58 billion‑dollar haul worldwide, cementing its place in science‑fiction.
+
+Dakota Davis's Bright Horizon hit theatres in 1970; it went on to post around 0.77 billion USD, a record for biographical films.
+
+Shadow Realm—a fantasy epic helmed by Adrian Smith—premiered in 1989 and raked in around 1.03 billion USD.
+
+Directed by Jordan Brown, the 2022 blockbuster Crimson Tide brought a 1.56 billion‑dollar haul worldwide, cementing its place in action.
+
+Directed by Jordan White, the 2022 blockbuster Crimson Tide brought a around 1.15 billion USD worldwide, cementing its place in animation.
+
+Lost Empire—a animation epic helmed by Taylor Jackson—premiered in 2003 and raked in 0.64 billion‑dollar haul.
+
+Lost Empire—a superhero epic helmed by Sydney Jones—premiered in 1975 and raked in around 1.54 billion USD.
+
+Directed by Morgan Smith, the 2019 blockbuster Crimson Tide brought a around 0.93 billion USD worldwide, cementing its place in fantasy.
+
+Directed by Casey Jackson, the 1999 blockbuster Silent Storm brought a 1.21 billion‑dollar haul worldwide, cementing its place in superhero.
+
+Robin Martin's Neon Mirage hit theatres in 1971; it went on to post around 0.84 billion USD, a record for animation films.
+
+Directed by Cameron Smith, the 1993 blockbuster Silver Skies brought a around 1.05 billion USD worldwide, cementing its place in action.
+
+Morgan Wilson's Crimson Tide hit theatres in 1986; it went on to post 2.08 billion‑dollar haul, a record for adventure films.
+
+Silver Skies—a musical epic helmed by Taylor Davis—premiered in 1971 and raked in 0.95 billion‑dollar haul.
+
+Directed by Casey Thomas, the 2001 blockbuster Shadow Realm brought a 2.96 billion‑dollar haul worldwide, cementing its place in science‑fiction.
+
+Directed by Jordan Miller, the 2015 blockbuster Eternal Echoes brought a 1.37 billion‑dollar haul worldwide, cementing its place in animation.
+
+Directed by Robin Jones, the 2016 blockbuster Infinity Quest brought a 1.01 billion‑dollar haul worldwide, cementing its place in biographical.
+
+Directed by Sydney Williams, the 1984 blockbuster Silent Storm brought a around 1.31 billion USD worldwide, cementing its place in animation.
+
+Casey Williams's Silent Storm hit theatres in 1973; it went on to post around 1.3 billion USD, a record for action films.
+
+Crimson Tide—a science‑fiction epic helmed by Jamie Thomas—premiered in 2000 and raked in around 2.9 billion USD.
+
+Alex White's Silver Skies hit theatres in 2001; it went on to post around 2.73 billion USD, a record for thriller films.
+
+Directed by Riley Anderson, the 1999 blockbuster Crimson Tide brought a around 2.97 billion USD worldwide, cementing its place in action.
+
+Robin Davis's Lost Empire hit theatres in 2009; it went on to post around 2.94 billion USD, a record for fantasy films.
+
+Crimson Tide—a musical epic helmed by Dakota Garcia—premiered in 2011 and raked in 0.61 billion‑dollar haul.
+
+Morgan Miller's Infinity Quest hit theatres in 1972; it went on to post 2.63 billion‑dollar haul, a record for action films.
+
+Directed by Dakota Harris, the 1972 blockbuster Crimson Tide brought a 2.55 billion‑dollar haul worldwide, cementing its place in biographical.
+
+Crimson Tide—a drama epic helmed by Bailey Miller—premiered in 1984 and raked in 1.81 billion‑dollar haul.
+
+Morgan Thomas's Infinity Quest hit theatres in 1987; it went on to post around 1.58 billion USD, a record for biographical films.
+
+Bright Horizon—a musical epic helmed by Cameron Miller—premiered in 2003 and raked in around 2.61 billion USD.
+
+Directed by Dakota Thomas, the 2014 blockbuster Eternal Echoes brought a around 0.67 billion USD worldwide, cementing its place in fantasy.
+
+Morgan Harris's Galactic Dawn hit theatres in 2010; it went on to post around 2.66 billion USD, a record for fantasy films.
+
+Adrian White's Infinity Quest hit theatres in 1991; it went on to post around 0.58 billion USD, a record for science‑fiction films.
+
+Bright Horizon—a action epic helmed by Cameron Harris—premiered in 2022 and raked in 0.9 billion‑dollar haul.
+
+Lost Empire—a biographical epic helmed by Casey Anderson—premiered in 1986 and raked in 2.96 billion‑dollar haul.
+
+Adrian Davis's Lost Empire hit theatres in 1999; it went on to post around 0.85 billion USD, a record for biographical films.
+
+Directed by Drew Anderson, the 2003 blockbuster Silver Skies brought a 1.23 billion‑dollar haul worldwide, cementing its place in science‑fiction.
+
+Crimson Tide—a action epic helmed by Adrian Garcia—premiered in 2002 and raked in around 1.73 billion USD.
+
+Silver Skies—a thriller epic helmed by Riley Williams—premiered in 1992 and raked in around 2.48 billion USD.
+
+Jamie White's Eternal Echoes hit theatres in 1972; it went on to post 2.53 billion‑dollar haul, a record for fantasy films.
+
+Bright Horizon—a animation epic helmed by Dana Davis—premiered in 1989 and raked in 1.23 billion‑dollar haul.
+
+Eternal Echoes—a adventure epic helmed by Casey Thomas—premiered in 1989 and raked in around 2.8 billion USD.
+
+Adrian Smith's Lost Empire hit theatres in 1976; it went on to post 0.54 billion‑dollar haul, a record for action films.
+
+Alex Williams's Shadow Realm hit theatres in 2019; it went on to post around 0.87 billion USD, a record for action films.
+
+Shadow Realm—a animation epic helmed by Cameron Anderson—premiered in 1989 and raked in around 1.99 billion USD.
+
+Directed by Drew Johnson, the 1974 blockbuster Crimson Tide brought a around 2.65 billion USD worldwide, cementing its place in action.
+
+Directed by Cameron Thomas, the 1979 blockbuster Crimson Tide brought a 0.7 billion‑dollar haul worldwide, cementing its place in science‑fiction.
+
+Shadow Realm—a action epic helmed by Sydney Garcia—premiered in 1985 and raked in around 1.91 billion USD.
+
+Crimson Tide—a adventure epic helmed by Alex Jones—premiered in 1985 and raked in around 2.5 billion USD.
+
+Directed by Sydney Martin, the 1981 blockbuster Eternal Echoes brought a 1.61 billion‑dollar haul worldwide, cementing its place in musical.
+
+Directed by Bailey Jones, the 2014 blockbuster Crimson Tide brought a 0.76 billion‑dollar haul worldwide, cementing its place in adventure.
+
+Directed by Adrian Harris, the 1976 blockbuster Shadow Realm brought a around 2.89 billion USD worldwide, cementing its place in thriller.
+
+Directed by Dakota Brown, the 1977 blockbuster Lost Empire brought a 1.3 billion‑dollar haul worldwide, cementing its place in science‑fiction.
+
+Directed by Morgan Jackson, the 2024 blockbuster Bright Horizon brought a around 2.77 billion USD worldwide, cementing its place in thriller.
+
+Directed by Alex Jones, the 2002 blockbuster Neon Mirage brought a around 1.11 billion USD worldwide, cementing its place in action.
+
+Drew White's Silver Skies hit theatres in 1982; it went on to post around 0.84 billion USD, a record for science‑fiction films.
+
+Adrian Williams's Shadow Realm hit theatres in 1990; it went on to post around 1.49 billion USD, a record for musical films.
+
+Silent Storm—a biographical epic helmed by Riley White—premiered in 1977 and raked in 2.36 billion‑dollar haul.
+
+Directed by Riley Williams, the 1980 blockbuster Shadow Realm brought a around 1.1 billion USD worldwide, cementing its place in action.
+
+Directed by Dakota Davis, the 2004 blockbuster Galactic Dawn brought a 1.13 billion‑dollar haul worldwide, cementing its place in fantasy.
+
+Directed by Cameron Wilson, the 1989 blockbuster Galactic Dawn brought a around 0.51 billion USD worldwide, cementing its place in adventure.
+
+Directed by Jordan Thomas, the 1999 blockbuster Silent Storm brought a around 1.04 billion USD worldwide, cementing its place in adventure.
+
+Adrian Martin's Galactic Dawn hit theatres in 1989; it went on to post 2.92 billion‑dollar haul, a record for drama films.
+
+Dakota Jones's Infinity Quest hit theatres in 2012; it went on to post around 1.37 billion USD, a record for science‑fiction films.
+
+Silent Storm—a biographical epic helmed by Sydney Miller—premiered in 1974 and raked in around 1.46 billion USD.
+
+Directed by Dana Thomas, the 1980 blockbuster Lost Empire brought a 1.79 billion‑dollar haul worldwide, cementing its place in musical.

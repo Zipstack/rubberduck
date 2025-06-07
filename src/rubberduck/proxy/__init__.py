@@ -209,14 +209,31 @@ class ProxyManager:
                 if cached_response:
                     # Create cache hit response
                     cache_hit = True
+                    
+                    # Filter out problematic headers from cached response too
+                    cached_headers = cached_response.get("headers", {})
+                    headers_to_filter = {
+                        'content-encoding', 'content-length', 'transfer-encoding',
+                        'connection', 'server', 'date', 'set-cookie', 'vary',
+                        'cache-control', 'etag', 'last-modified', 'expires',
+                        'alt-svc', 'cf-ray', 'cf-cache-status', 'x-cache',
+                        'strict-transport-security', 'x-content-type-options',
+                        'x-envoy-upstream-service-time'
+                    }
+                    
+                    clean_headers = {}
+                    for key, value in cached_headers.items():
+                        if key.lower() not in headers_to_filter:
+                            clean_headers[key] = value
+                    
+                    # Add cache-specific headers
+                    clean_headers["X-Cache"] = "HIT"
+                    clean_headers["X-Cache-Timestamp"] = cached_response.get("cache_timestamp", "")
+                    
                     response = JSONResponse(
                         content=cached_response.get("data", {}),
                         status_code=cached_response.get("status_code", 200),
-                        headers={
-                            **cached_response.get("headers", {}),
-                            "X-Cache": "HIT",
-                            "X-Cache-Timestamp": cached_response.get("cache_timestamp", "")
-                        }
+                        headers=clean_headers
                     )
                     
                     # Log the cache hit
@@ -258,7 +275,26 @@ class ProxyManager:
                     )
                 
                 # Return response with appropriate status code
-                response_headers = response_data.get("headers", {})
+                upstream_headers = response_data.get("headers", {})
+                
+                # Filter out headers that should not be forwarded from upstream
+                # These headers are either handled by FastAPI or cause conflicts
+                headers_to_filter = {
+                    'content-encoding', 'content-length', 'transfer-encoding',
+                    'connection', 'server', 'date', 'set-cookie', 'vary',
+                    'cache-control', 'etag', 'last-modified', 'expires',
+                    'alt-svc', 'cf-ray', 'cf-cache-status', 'x-cache',
+                    'strict-transport-security', 'x-content-type-options',
+                    'x-envoy-upstream-service-time'
+                }
+                
+                # Build clean response headers
+                response_headers = {}
+                for key, value in upstream_headers.items():
+                    if key.lower() not in headers_to_filter:
+                        response_headers[key] = value
+                
+                # Add our own cache status
                 if cache_key:
                     response_headers["X-Cache"] = "MISS"
                 
@@ -337,17 +373,27 @@ class ProxyManager:
             # Create the FastAPI app for this proxy
             app = self.create_proxy_app(proxy_id, provider_name)
             
+            # Create server config for proper shutdown control
+            config = uvicorn.Config(app, host="127.0.0.1", port=assigned_port, log_level="warning")
+            server = uvicorn.Server(config)
+            
+            # Create shutdown event for clean termination
+            shutdown_event = threading.Event()
+            
             # Start the proxy in a separate thread
             def run_proxy():
-                uvicorn.run(app, host="127.0.0.1", port=assigned_port, log_level="warning")
+                import asyncio
+                asyncio.run(server.serve())
             
-            proxy_thread = threading.Thread(target=run_proxy, daemon=True)
+            proxy_thread = threading.Thread(target=run_proxy, daemon=False)
             proxy_thread.start()
             
-            # Store proxy info
+            # Store proxy info including server instance for shutdown
             self.active_proxies[proxy_id] = {
                 "app": app,
                 "thread": proxy_thread,
+                "server": server,
+                "shutdown_event": shutdown_event,
                 "port": assigned_port,
                 "provider": provider_name
             }
@@ -368,13 +414,21 @@ class ProxyManager:
             
             proxy_info = self.active_proxies[proxy_id]
             port = proxy_info["port"]
+            server = proxy_info["server"]
+            thread = proxy_info["thread"]
+            
+            # Trigger server shutdown
+            server.should_exit = True
             
             # Remove from tracking
             del self.active_proxies[proxy_id]
             del self.port_assignments[port]
             
-            # Note: uvicorn doesn't have a clean shutdown mechanism when run in thread
-            # In production, we'd use a more sophisticated process management approach
+            # Wait for thread to finish (with timeout)
+            thread.join(timeout=5.0)
+            
+            if thread.is_alive():
+                logger.warning(f"Proxy {proxy_id} thread did not shut down cleanly within timeout")
     
     def get_proxy_status(self, proxy_id: int) -> dict:
         """

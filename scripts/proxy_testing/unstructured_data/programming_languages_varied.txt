@@ -1,0 +1,210 @@
+### Prompt
+You will receive one descriptive snippet. Parse it and return **only** JSON that fits this schema exactly:
+{
+  "language_name": "string",
+  "designer": "string",
+  "first_release_year": "number",
+  "tiobe_rank_May_2025": "number",
+  "primary_paradigm": "string"
+}
+---
+
+Back in 1986, Adrian Martin unveiled JavaScript. The functional language now claims spot #5 on the TIOBE ladder (May 2025).
+
+Cooked up by Jordan White in 2003, Chronos embraces a procedural style and currently sits at #41 on TIOBE (May 2025).
+
+Back in 1984, Sydney Williams unveiled JavaScript. The multi‑paradigm language now claims spot #16 on the TIOBE ladder (May 2025).
+
+Cooked up by Jordan Miller in 1976, AuroraScript embraces a concurrent style and currently sits at #9 on TIOBE (May 2025).
+
+Back in 1950, Jordan Miller unveiled Go. The concurrent language now claims spot #40 on the TIOBE ladder (May 2025).
+
+Cooked up by Alex White in 2021, Lynx embraces a object‑oriented style and currently sits at #7 on TIOBE (May 2025).
+
+Zephyr (ranked #41 in May '25) debuted in 1961; its creator Casey White championed a logic approach.
+
+Cooked up by Jamie Jones in 1979, Lynx embraces a object‑oriented style and currently sits at #28 on TIOBE (May 2025).
+
+Go (ranked #38 in May '25) debuted in 1957; its creator Casey Miller championed a object‑oriented approach.
+
+Back in 1968, Jamie White unveiled Zephyr. The object‑oriented language now claims spot #47 on the TIOBE ladder (May 2025).
+
+Rust (ranked #19 in May '25) debuted in 1980; its creator Jamie Jones championed a logic approach.
+
+Back in 1960, Riley White unveiled Rust. The object‑oriented language now claims spot #50 on the TIOBE ladder (May 2025).
+
+Zephyr (ranked #17 in May '25) debuted in 1968; its creator Bailey Martin championed a concurrent approach.
+
+Cooked up by Dakota Harris in 1950, Python embraces a logic style and currently sits at #48 on TIOBE (May 2025).
+
+Go (ranked #8 in May '25) debuted in 1968; its creator Casey Johnson championed a procedural approach.
+
+Cooked up by Morgan Jackson in 1958, AuroraScript embraces a multi‑paradigm style and currently sits at #10 on TIOBE (May 2025).
+
+Back in 2008, Sydney Harris unveiled JavaScript. The procedural language now claims spot #13 on the TIOBE ladder (May 2025).
+
+Back in 1974, Drew Wilson unveiled Zephyr. The object‑oriented language now claims spot #4 on the TIOBE ladder (May 2025).
+
+Chronos (ranked #12 in May '25) debuted in 1986; its creator Alex White championed a concurrent approach.
+
+Back in 2004, Drew Garcia unveiled Zephyr. The multi‑paradigm language now claims spot #11 on the TIOBE ladder (May 2025).
+
+Zephyr (ranked #33 in May '25) debuted in 2011; its creator Sydney Brown championed a logic approach.
+
+Go (ranked #29 in May '25) debuted in 1990; its creator Alex Johnson championed a logic approach.
+
+Chronos (ranked #46 in May '25) debuted in 1964; its creator Drew Johnson championed a concurrent approach.
+
+Chronos (ranked #46 in May '25) debuted in 1975; its creator Jamie Johnson championed a procedural approach.
+
+Cooked up by Morgan Thomas in 2008, FalconLang embraces a object‑oriented style and currently sits at #22 on TIOBE (May 2025).
+
+FalconLang (ranked #3 in May '25) debuted in 2020; its creator Bailey Harris championed a functional approach.
+
+Back in 2023, Robin Jones unveiled Zephyr. The functional language now claims spot #14 on the TIOBE ladder (May 2025).
+
+FalconLang (ranked #27 in May '25) debuted in 2023; its creator Cameron Johnson championed a procedural approach.
+
+Nimbus (ranked #50 in May '25) debuted in 2011; its creator Jordan Johnson championed a functional approach.
+
+Back in 2012, Sydney Smith unveiled AuroraScript. The multi‑paradigm language now claims spot #27 on the TIOBE ladder (May 2025).
+
+Cooked up by Morgan Martin in 1953, Chronos embraces a multi‑paradigm style and currently sits at #49 on TIOBE (May 2025).
+
+Cooked up by Dana Jackson in 1960, Lynx embraces a logic style and currently sits at #13 on TIOBE (May 2025).
+
+Cooked up by Robin Brown in 1992, Lynx embraces a logic style and currently sits at #36 on TIOBE (May 2025).
+
+AuroraScript (ranked #35 in May '25) debuted in 1966; its creator Jamie Wilson championed a functional approach.
+
+Cooked up by Drew Brown in 1961, Chronos embraces a logic style and currently sits at #24 on TIOBE (May 2025).
+
+FalconLang (ranked #41 in May '25) debuted in 1951; its creator Dana Jones championed a logic approach.
+
+Cooked up by Adrian Anderson in 2008, Python embraces a procedural style and currently sits at #32 on TIOBE (May 2025).
+
+Back in 2010, Riley Miller unveiled Nimbus. The object‑oriented language now claims spot #44 on the TIOBE ladder (May 2025).
+
+Cooked up by Adrian Wilson in 2010, AuroraScript embraces a logic style and currently sits at #47 on TIOBE (May 2025).
+
+Back in 1992, Riley Harris unveiled JavaScript. The logic language now claims spot #4 on the TIOBE ladder (May 2025).
+
+Cooked up by Jamie Jackson in 1975, Lynx embraces a concurrent style and currently sits at #4 on TIOBE (May 2025).
+
+Cooked up by Sydney Johnson in 2006, Rust embraces a multi‑paradigm style and currently sits at #18 on TIOBE (May 2025).
+
+Back in 1989, Cameron Garcia unveiled FalconLang. The procedural language now claims spot #1 on the TIOBE ladder (May 2025).
+
+Back in 1966, Robin Smith unveiled Go. The multi‑paradigm language now claims spot #20 on the TIOBE ladder (May 2025).
+
+Cooked up by Riley Garcia in 2020, JavaScript embraces a concurrent style and currently sits at #33 on TIOBE (May 2025).
+
+Go (ranked #33 in May '25) debuted in 1996; its creator Casey Jackson championed a functional approach.
+
+AuroraScript (ranked #8 in May '25) debuted in 2023; its creator Bailey Smith championed a object‑oriented approach.
+
+Cooked up by Dakota Smith in 1983, Rust embraces a object‑oriented style and currently sits at #39 on TIOBE (May 2025).
+
+Back in 2023, Adrian Thomas unveiled Nimbus. The functional language now claims spot #15 on the TIOBE ladder (May 2025).
+
+Back in 2004, Jamie Brown unveiled Python. The multi‑paradigm language now claims spot #23 on the TIOBE ladder (May 2025).
+
+FalconLang (ranked #50 in May '25) debuted in 1957; its creator Sydney Garcia championed a concurrent approach.
+
+Cooked up by Alex Smith in 1956, AuroraScript embraces a concurrent style and currently sits at #14 on TIOBE (May 2025).
+
+Back in 2011, Casey Thomas unveiled FalconLang. The object‑oriented language now claims spot #8 on the TIOBE ladder (May 2025).
+
+Nimbus (ranked #29 in May '25) debuted in 1982; its creator Taylor Miller championed a concurrent approach.
+
+Back in 1977, Drew Davis unveiled Go. The object‑oriented language now claims spot #49 on the TIOBE ladder (May 2025).
+
+Cooked up by Morgan Williams in 1953, Rust embraces a object‑oriented style and currently sits at #45 on TIOBE (May 2025).
+
+Back in 1976, Bailey Davis unveiled Go. The multi‑paradigm language now claims spot #39 on the TIOBE ladder (May 2025).
+
+Back in 2016, Bailey Brown unveiled Go. The functional language now claims spot #34 on the TIOBE ladder (May 2025).
+
+Cooked up by Jamie Jones in 1951, Chronos embraces a multi‑paradigm style and currently sits at #31 on TIOBE (May 2025).
+
+Cooked up by Jordan Anderson in 1982, Python embraces a procedural style and currently sits at #18 on TIOBE (May 2025).
+
+Chronos (ranked #37 in May '25) debuted in 2007; its creator Cameron Jackson championed a logic approach.
+
+Cooked up by Adrian Harris in 2013, Zephyr embraces a multi‑paradigm style and currently sits at #15 on TIOBE (May 2025).
+
+Back in 1973, Riley Smith unveiled FalconLang. The object‑oriented language now claims spot #44 on the TIOBE ladder (May 2025).
+
+Back in 2016, Morgan Martin unveiled JavaScript. The concurrent language now claims spot #18 on the TIOBE ladder (May 2025).
+
+Back in 1971, Jamie Davis unveiled Rust. The object‑oriented language now claims spot #7 on the TIOBE ladder (May 2025).
+
+Cooked up by Sydney Smith in 2019, Nimbus embraces a concurrent style and currently sits at #34 on TIOBE (May 2025).
+
+Back in 1974, Robin Davis unveiled Rust. The logic language now claims spot #45 on the TIOBE ladder (May 2025).
+
+Cooked up by Morgan Garcia in 2019, Nimbus embraces a object‑oriented style and currently sits at #4 on TIOBE (May 2025).
+
+Zephyr (ranked #5 in May '25) debuted in 1963; its creator Drew Johnson championed a multi‑paradigm approach.
+
+Rust (ranked #44 in May '25) debuted in 1994; its creator Dana Jones championed a functional approach.
+
+Cooked up by Jordan Anderson in 2000, AuroraScript embraces a object‑oriented style and currently sits at #17 on TIOBE (May 2025).
+
+Cooked up by Morgan Harris in 1953, Go embraces a functional style and currently sits at #5 on TIOBE (May 2025).
+
+Nimbus (ranked #32 in May '25) debuted in 1978; its creator Jordan Smith championed a procedural approach.
+
+Back in 2016, Robin Miller unveiled Nimbus. The multi‑paradigm language now claims spot #33 on the TIOBE ladder (May 2025).
+
+Back in 1987, Cameron Wilson unveiled JavaScript. The multi‑paradigm language now claims spot #4 on the TIOBE ladder (May 2025).
+
+Cooked up by Morgan Harris in 1962, Chronos embraces a object‑oriented style and currently sits at #23 on TIOBE (May 2025).
+
+Python (ranked #9 in May '25) debuted in 1991; its creator Bailey White championed a multi‑paradigm approach.
+
+Cooked up by Adrian Smith in 1965, Zephyr embraces a concurrent style and currently sits at #23 on TIOBE (May 2025).
+
+JavaScript (ranked #10 in May '25) debuted in 1984; its creator Casey Garcia championed a functional approach.
+
+Python (ranked #32 in May '25) debuted in 2008; its creator Jordan Davis championed a logic approach.
+
+Back in 1962, Taylor Johnson unveiled Go. The multi‑paradigm language now claims spot #18 on the TIOBE ladder (May 2025).
+
+Cooked up by Cameron Davis in 1989, AuroraScript embraces a functional style and currently sits at #18 on TIOBE (May 2025).
+
+Back in 1981, Taylor Smith unveiled Lynx. The concurrent language now claims spot #2 on the TIOBE ladder (May 2025).
+
+Back in 1952, Dakota Anderson unveiled Chronos. The procedural language now claims spot #4 on the TIOBE ladder (May 2025).
+
+Rust (ranked #5 in May '25) debuted in 1976; its creator Casey Brown championed a logic approach.
+
+Cooked up by Casey Jones in 2019, Go embraces a functional style and currently sits at #42 on TIOBE (May 2025).
+
+JavaScript (ranked #42 in May '25) debuted in 1981; its creator Drew Jackson championed a concurrent approach.
+
+Back in 1984, Jamie Harris unveiled AuroraScript. The procedural language now claims spot #49 on the TIOBE ladder (May 2025).
+
+AuroraScript (ranked #39 in May '25) debuted in 1976; its creator Drew Williams championed a logic approach.
+
+Back in 2010, Riley Thomas unveiled Python. The multi‑paradigm language now claims spot #6 on the TIOBE ladder (May 2025).
+
+Cooked up by Jamie Harris in 2017, Python embraces a logic style and currently sits at #33 on TIOBE (May 2025).
+
+Zephyr (ranked #40 in May '25) debuted in 2011; its creator Drew White championed a procedural approach.
+
+Python (ranked #43 in May '25) debuted in 1955; its creator Taylor Jackson championed a object‑oriented approach.
+
+Nimbus (ranked #26 in May '25) debuted in 1977; its creator Taylor Garcia championed a object‑oriented approach.
+
+Go (ranked #18 in May '25) debuted in 1986; its creator Robin Harris championed a procedural approach.
+
+Cooked up by Taylor Thomas in 2010, AuroraScript embraces a procedural style and currently sits at #34 on TIOBE (May 2025).
+
+Back in 1984, Jamie Williams unveiled Go. The object‑oriented language now claims spot #37 on the TIOBE ladder (May 2025).
+
+Back in 2014, Sydney Thomas unveiled JavaScript. The procedural language now claims spot #5 on the TIOBE ladder (May 2025).
+
+Back in 1962, Riley Brown unveiled JavaScript. The logic language now claims spot #4 on the TIOBE ladder (May 2025).
+
+Rust (ranked #14 in May '25) debuted in 1984; its creator Drew Martin championed a multi‑paradigm approach.

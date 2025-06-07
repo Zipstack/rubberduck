@@ -1,0 +1,211 @@
+### Prompt
+You will receive one descriptive snippet. Parse it and return **only** JSON that fits this schema exactly:
+{
+  "mission_name": "string",
+  "agency": "string",
+  "launch_vehicle": "string",
+  "launch_date": "string",
+  "primary_objective": "string",
+  "status": "string"
+}
+---
+
+Aurora III, flown by CNSA on a Starship rocket (lift‑off: 02 May 2002), aimed at satellite deployment and ended in partial success.
+
+Launched on 06 Jun 2002 aboard a Soyuz, NASA's Aurora IV set off to tackle a lunar-orbit shakedown; it is recorded as a success.
+
+Artemis II, flown by ESA on a Soyuz rocket (lift‑off: 05 Aug 2018), aimed at a lunar-orbit shakedown and ended in success.
+
+Launched on 14 Jul 2016 aboard a Ariane 6, SpaceX's Starlight IV set off to tackle a crewed flight demo; it is recorded as a ongoing mission.
+
+Launched on 20 Jun 2002 aboard a Soyuz, ESA's Pioneer I set off to tackle Mars exploration; it is recorded as a success.
+
+Odyssey V, flown by CNSA on a Ariane 6 rocket (lift‑off: 23 Nov 2024), aimed at satellite deployment and ended in ongoing mission.
+
+Launched on 26 Sep 2018 aboard a Long March 5, JAXA's Artemis IV set off to tackle a lunar-orbit shakedown; it is recorded as a failure.
+
+Voyager II, flown by NASA on a Soyuz rocket (lift‑off: 23 Aug 2004), aimed at Earth-observation experiments and ended in ongoing mission.
+
+Artemis IV, flown by Roscosmos on a Starship rocket (lift‑off: 03 Feb 2025), aimed at Earth-observation experiments and ended in ongoing mission.
+
+Artemis III, flown by CNSA on a SLS rocket (lift‑off: 07 Apr 2014), aimed at Mars exploration and ended in partial success.
+
+Voyager IV, flown by ESA on a Falcon 9 rocket (lift‑off: 22 Dec 2018), aimed at a lunar-orbit shakedown and ended in failure.
+
+On 18 Nov 2014, the CNSA team used Falcon 9 to send Aurora II skyward. Goal: Earth-observation experiments. Outcome: success.
+
+On 03 Jul 2019, the ESA team used Long March 5 to send Pioneer II skyward. Goal: Mars exploration. Outcome: failure.
+
+Launched on 08 Apr 2024 aboard a GSLV Mk III, CNSA's Voyager V set off to tackle a deep‑space probe drop‑off; it is recorded as a ongoing mission.
+
+Launched on 22 Aug 2010 aboard a Long March 5, Roscosmos's Artemis IV set off to tackle a crewed flight demo; it is recorded as a failure.
+
+On 24 Mar 2017, the ISRO team used Soyuz to send Odyssey I skyward. Goal: a deep‑space probe drop‑off. Outcome: partial success.
+
+Starlight III, flown by ESA on a Soyuz rocket (lift‑off: 30 Sep 2011), aimed at Earth-observation experiments and ended in ongoing mission.
+
+Launched on 21 May 2025 aboard a Long March 5, CNSA's Artemis IV set off to tackle a lunar-orbit shakedown; it is recorded as a ongoing mission.
+
+Launched on 02 Jul 2016 aboard a Starship, SpaceX's Voyager V set off to tackle a deep‑space probe drop‑off; it is recorded as a success.
+
+Genesis III, flown by Roscosmos on a Falcon 9 rocket (lift‑off: 27 Jul 2021), aimed at a deep‑space probe drop‑off and ended in failure.
+
+Starlight I, flown by ISRO on a Falcon 9 rocket (lift‑off: 11 Mar 2022), aimed at satellite deployment and ended in ongoing mission.
+
+Genesis I, flown by Roscosmos on a SLS rocket (lift‑off: 12 Mar 2025), aimed at satellite deployment and ended in failure.
+
+Odyssey I, flown by CNSA on a Ariane 6 rocket (lift‑off: 29 May 2022), aimed at a crewed flight demo and ended in partial success.
+
+On 17 Apr 2020, the CNSA team used Falcon 9 to send Genesis V skyward. Goal: Mars exploration. Outcome: ongoing mission.
+
+On 19 Jul 2015, the NASA team used Long March 5 to send Artemis V skyward. Goal: Mars exploration. Outcome: failure.
+
+Voyager I, flown by NASA on a SLS rocket (lift‑off: 30 Mar 2006), aimed at a deep‑space probe drop‑off and ended in partial success.
+
+Pioneer IV, flown by ISRO on a Long March 5 rocket (lift‑off: 26 Jun 2020), aimed at Earth-observation experiments and ended in ongoing mission.
+
+Launched on 21 Feb 2015 aboard a Ariane 6, Roscosmos's Aurora IV set off to tackle Mars exploration; it is recorded as a failure.
+
+Launched on 10 Sep 2014 aboard a Falcon 9, ESA's Genesis I set off to tackle a crewed flight demo; it is recorded as a success.
+
+Odyssey I, flown by NASA on a Falcon 9 rocket (lift‑off: 17 Mar 2004), aimed at a crewed flight demo and ended in partial success.
+
+Launched on 01 Jun 2022 aboard a Falcon 9, JAXA's Artemis III set off to tackle a deep‑space probe drop‑off; it is recorded as a partial success.
+
+On 12 Sep 2001, the JAXA team used GSLV Mk III to send Artemis V skyward. Goal: a lunar-orbit shakedown. Outcome: failure.
+
+On 22 Nov 2017, the JAXA team used Ariane 6 to send Artemis IV skyward. Goal: a crewed flight demo. Outcome: failure.
+
+Launched on 06 Apr 2008 aboard a Starship, CNSA's Odyssey II set off to tackle a deep‑space probe drop‑off; it is recorded as a partial success.
+
+On 18 Jul 2024, the NASA team used GSLV Mk III to send Artemis III skyward. Goal: satellite deployment. Outcome: success.
+
+Odyssey III, flown by JAXA on a SLS rocket (lift‑off: 10 Dec 2013), aimed at a lunar-orbit shakedown and ended in ongoing mission.
+
+On 29 Nov 2025, the NASA team used SLS to send Aurora III skyward. Goal: satellite deployment. Outcome: success.
+
+On 01 Apr 2019, the ISRO team used Falcon 9 to send Odyssey I skyward. Goal: Earth-observation experiments. Outcome: failure.
+
+On 19 Nov 2002, the JAXA team used Long March 5 to send Aurora III skyward. Goal: Mars exploration. Outcome: ongoing mission.
+
+On 27 Apr 2024, the SpaceX team used Soyuz to send Genesis I skyward. Goal: a deep‑space probe drop‑off. Outcome: success.
+
+Starlight III, flown by CNSA on a SLS rocket (lift‑off: 11 Aug 2023), aimed at a deep‑space probe drop‑off and ended in failure.
+
+Launched on 18 Feb 2019 aboard a Long March 5, CNSA's Voyager I set off to tackle a deep‑space probe drop‑off; it is recorded as a failure.
+
+On 22 Jul 2003, the NASA team used GSLV Mk III to send Aurora III skyward. Goal: a deep‑space probe drop‑off. Outcome: failure.
+
+Launched on 28 Feb 2024 aboard a GSLV Mk III, Roscosmos's Genesis III set off to tackle a lunar-orbit shakedown; it is recorded as a failure.
+
+Launched on 29 Feb 2008 aboard a Soyuz, CNSA's Starlight II set off to tackle a lunar-orbit shakedown; it is recorded as a success.
+
+On 23 Feb 2012, the NASA team used Long March 5 to send Odyssey II skyward. Goal: Mars exploration. Outcome: success.
+
+Pioneer IV, flown by CNSA on a Falcon 9 rocket (lift‑off: 05 Aug 2015), aimed at a lunar-orbit shakedown and ended in ongoing mission.
+
+On 09 Oct 2000, the Roscosmos team used Ariane 6 to send Artemis III skyward. Goal: Earth-observation experiments. Outcome: ongoing mission.
+
+On 12 Apr 2009, the SpaceX team used SLS to send Starlight I skyward. Goal: a crewed flight demo. Outcome: partial success.
+
+On 30 Nov 2019, the NASA team used SLS to send Odyssey I skyward. Goal: Mars exploration. Outcome: ongoing mission.
+
+On 24 Mar 2006, the ESA team used GSLV Mk III to send Voyager III skyward. Goal: a crewed flight demo. Outcome: partial success.
+
+On 26 Aug 2001, the NASA team used Starship to send Artemis V skyward. Goal: Mars exploration. Outcome: ongoing mission.
+
+Pioneer III, flown by CNSA on a Falcon 9 rocket (lift‑off: 02 May 2015), aimed at a crewed flight demo and ended in failure.
+
+On 23 Mar 2012, the NASA team used Falcon 9 to send Starlight IV skyward. Goal: satellite deployment. Outcome: failure.
+
+Genesis V, flown by ESA on a Ariane 6 rocket (lift‑off: 01 Aug 2014), aimed at Earth-observation experiments and ended in failure.
+
+On 14 Jan 2011, the CNSA team used Ariane 6 to send Starlight I skyward. Goal: Earth-observation experiments. Outcome: ongoing mission.
+
+On 05 Apr 2002, the CNSA team used Long March 5 to send Voyager IV skyward. Goal: Earth-observation experiments. Outcome: success.
+
+Starlight V, flown by JAXA on a Falcon 9 rocket (lift‑off: 26 Dec 2023), aimed at a deep‑space probe drop‑off and ended in success.
+
+Starlight III, flown by JAXA on a SLS rocket (lift‑off: 10 Sep 2024), aimed at Earth-observation experiments and ended in success.
+
+On 11 Oct 2016, the Roscosmos team used SLS to send Pioneer I skyward. Goal: a deep‑space probe drop‑off. Outcome: success.
+
+Launched on 11 Nov 2012 aboard a Soyuz, CNSA's Artemis III set off to tackle a deep‑space probe drop‑off; it is recorded as a failure.
+
+Odyssey V, flown by JAXA on a Starship rocket (lift‑off: 03 Oct 2020), aimed at a crewed flight demo and ended in failure.
+
+Starlight IV, flown by ESA on a Starship rocket (lift‑off: 16 Jan 2012), aimed at a deep‑space probe drop‑off and ended in success.
+
+Launched on 16 Nov 2002 aboard a Starship, JAXA's Odyssey IV set off to tackle a deep‑space probe drop‑off; it is recorded as a partial success.
+
+Launched on 25 May 2004 aboard a Ariane 6, Roscosmos's Artemis III set off to tackle a deep‑space probe drop‑off; it is recorded as a success.
+
+On 13 Jun 2019, the SpaceX team used Soyuz to send Genesis IV skyward. Goal: satellite deployment. Outcome: failure.
+
+Voyager I, flown by ESA on a Soyuz rocket (lift‑off: 22 Apr 2015), aimed at satellite deployment and ended in failure.
+
+Launched on 28 Jun 2013 aboard a GSLV Mk III, NASA's Voyager I set off to tackle a crewed flight demo; it is recorded as a success.
+
+Launched on 11 Jun 2023 aboard a SLS, CNSA's Genesis IV set off to tackle Mars exploration; it is recorded as a partial success.
+
+Launched on 06 May 2014 aboard a Soyuz, JAXA's Genesis I set off to tackle a lunar-orbit shakedown; it is recorded as a success.
+
+Launched on 06 Jun 2018 aboard a SLS, CNSA's Voyager II set off to tackle Mars exploration; it is recorded as a partial success.
+
+Odyssey II, flown by ESA on a Soyuz rocket (lift‑off: 09 May 2010), aimed at a lunar-orbit shakedown and ended in success.
+
+On 14 Dec 2018, the Roscosmos team used Ariane 6 to send Genesis V skyward. Goal: a deep‑space probe drop‑off. Outcome: failure.
+
+Pioneer V, flown by NASA on a Long March 5 rocket (lift‑off: 23 Feb 2010), aimed at a deep‑space probe drop‑off and ended in partial success.
+
+Launched on 02 Jan 2015 aboard a Starship, ESA's Artemis II set off to tackle satellite deployment; it is recorded as a failure.
+
+Aurora I, flown by ISRO on a Long March 5 rocket (lift‑off: 19 May 2024), aimed at satellite deployment and ended in partial success.
+
+On 14 Nov 2015, the ISRO team used Falcon 9 to send Pioneer IV skyward. Goal: satellite deployment. Outcome: ongoing mission.
+
+On 22 Sep 2014, the ESA team used Starship to send Odyssey V skyward. Goal: Earth-observation experiments. Outcome: success.
+
+Launched on 31 Mar 2014 aboard a Long March 5, Roscosmos's Pioneer III set off to tackle a deep‑space probe drop‑off; it is recorded as a ongoing mission.
+
+Launched on 03 May 2010 aboard a Long March 5, ESA's Starlight I set off to tackle Earth-observation experiments; it is recorded as a ongoing mission.
+
+On 27 May 2005, the ESA team used Soyuz to send Starlight III skyward. Goal: Earth-observation experiments. Outcome: failure.
+
+Launched on 09 Mar 2019 aboard a SLS, NASA's Pioneer II set off to tackle a crewed flight demo; it is recorded as a success.
+
+On 04 Nov 2002, the SpaceX team used SLS to send Voyager IV skyward. Goal: a crewed flight demo. Outcome: failure.
+
+On 05 Apr 2024, the ISRO team used GSLV Mk III to send Starlight I skyward. Goal: a deep‑space probe drop‑off. Outcome: ongoing mission.
+
+Starlight II, flown by NASA on a Falcon 9 rocket (lift‑off: 20 Aug 2004), aimed at Earth-observation experiments and ended in ongoing mission.
+
+Aurora III, flown by Roscosmos on a Falcon 9 rocket (lift‑off: 12 Sep 2021), aimed at a crewed flight demo and ended in failure.
+
+Launched on 24 Jan 2017 aboard a Ariane 6, JAXA's Odyssey V set off to tackle Earth-observation experiments; it is recorded as a failure.
+
+Genesis V, flown by JAXA on a Starship rocket (lift‑off: 31 Mar 2007), aimed at Earth-observation experiments and ended in ongoing mission.
+
+Launched on 27 Jun 2002 aboard a Falcon 9, NASA's Aurora I set off to tackle a crewed flight demo; it is recorded as a ongoing mission.
+
+On 02 Apr 2021, the Roscosmos team used Soyuz to send Aurora IV skyward. Goal: Mars exploration. Outcome: success.
+
+Launched on 12 Jun 2002 aboard a Falcon 9, CNSA's Pioneer IV set off to tackle a crewed flight demo; it is recorded as a failure.
+
+On 08 Aug 2025, the NASA team used Falcon 9 to send Genesis I skyward. Goal: a crewed flight demo. Outcome: failure.
+
+Voyager II, flown by CNSA on a Starship rocket (lift‑off: 13 Feb 2016), aimed at satellite deployment and ended in failure.
+
+On 09 Feb 2011, the NASA team used Ariane 6 to send Artemis II skyward. Goal: a crewed flight demo. Outcome: partial success.
+
+On 07 Jul 2006, the Roscosmos team used GSLV Mk III to send Odyssey IV skyward. Goal: a crewed flight demo. Outcome: failure.
+
+On 06 Oct 2018, the NASA team used Starship to send Aurora IV skyward. Goal: a lunar-orbit shakedown. Outcome: ongoing mission.
+
+On 30 Aug 2025, the CNSA team used Ariane 6 to send Odyssey V skyward. Goal: satellite deployment. Outcome: ongoing mission.
+
+Launched on 29 May 2021 aboard a Starship, JAXA's Genesis II set off to tackle a crewed flight demo; it is recorded as a success.
+
+Launched on 13 Jan 2021 aboard a Starship, ISRO's Aurora II set off to tackle satellite deployment; it is recorded as a partial success.
+
+Odyssey III, flown by ESA on a Ariane 6 rocket (lift‑off: 02 Jul 2023), aimed at a crewed flight demo and ended in success.

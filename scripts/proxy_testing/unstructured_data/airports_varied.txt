@@ -1,0 +1,211 @@
+### Prompt
+You will receive one descriptive snippet. Parse it and return **only** JSON that fits this schema exactly:
+{
+  "name": "string",
+  "city_served": "string",
+  "country": "string",
+  "iata_code": "string",
+  "passengers_2024_millions": "number",
+  "year_inaugurated": "number"
+}
+---
+
+Rio de Janeiro International Airport (SYY) started operations in 1970; today it serves Rio de Janeiro, Brazil, handling some 58.9 million flyers in 2024.
+
+Serving Tokyo in Japan, Tokyo International Airport—airport code TXB—opened its doors in 1972 and moved roughly 21.9 million passengers during 2024.
+
+Serving Sydney in Australia, Sydney International Airport—airport code XDM—opened its doors in 2019 and moved 79.2 million travelers during 2024.
+
+Opened back in 1986, Vienna International Airport (ZHC) caters to Vienna, Austria. Passenger count for 2024 hovered near 72.4 million travelers.
+
+Helsinki International Airport (GMX) started operations in 1988; today it serves Helsinki, Finland, handling some 51.4 million flyers in 2024.
+
+Opened back in 1920, Chicago International Airport (IBO) caters to Chicago, USA. Passenger count for 2024 hovered near some 35.2 million flyers.
+
+Opened back in 2006, Paris International Airport (WRU) caters to Paris, France. Passenger count for 2024 hovered near some 30.7 million flyers.
+
+Los Angeles International Airport (IATA: KLI) has linked Los Angeles, USA, to the world since 1981 and saw some 67.9 million flyers last year (2024).
+
+Vienna International Airport (RMI) started operations in 2014; today it serves Vienna, Austria, handling roughly 92.3 million passengers in 2024.
+
+Istanbul International Airport (IATA: INJ) has linked Istanbul, Turkey, to the world since 1967 and saw some 42.8 million flyers last year (2024).
+
+Serving Madrid in Spain, Madrid International Airport—airport code CYY—opened its doors in 1964 and moved some 61.0 million flyers during 2024.
+
+Serving Berlin in Germany, Berlin International Airport—airport code IQJ—opened its doors in 1941 and moved some 58.8 million flyers during 2024.
+
+Rio de Janeiro International Airport (IATA: CGK) has linked Rio de Janeiro, Brazil, to the world since 1938 and saw 67.4 million travelers last year (2024).
+
+Opened back in 1957, Prague International Airport (HIT) caters to Prague, Czech Republic. Passenger count for 2024 hovered near roughly 116.5 million passengers.
+
+Seoul International Airport (IATA: NKC) has linked Seoul, South Korea, to the world since 1997 and saw roughly 96.0 million passengers last year (2024).
+
+Serving Cairo in Egypt, Cairo International Airport—airport code OBA—opened its doors in 1986 and moved 105.4 million travelers during 2024.
+
+Lima International Airport (IATA: KVP) has linked Lima, Peru, to the world since 1924 and saw roughly 104.5 million passengers last year (2024).
+
+Opened back in 1940, London International Airport (ANN) caters to London, UK. Passenger count for 2024 hovered near some 52.0 million flyers.
+
+Serving New York in USA, New York International Airport—airport code XES—opened its doors in 1972 and moved roughly 66.5 million passengers during 2024.
+
+Rio de Janeiro International Airport (IATA: ZDQ) has linked Rio de Janeiro, Brazil, to the world since 1947 and saw roughly 70.0 million passengers last year (2024).
+
+Serving Dublin in Ireland, Dublin International Airport—airport code BRB—opened its doors in 1992 and moved roughly 117.1 million passengers during 2024.
+
+Opened back in 1972, Rio de Janeiro International Airport (AGP) caters to Rio de Janeiro, Brazil. Passenger count for 2024 hovered near 100.6 million travelers.
+
+Chicago International Airport (TII) started operations in 1922; today it serves Chicago, USA, handling some 119.3 million flyers in 2024.
+
+Opened back in 2000, Cairo International Airport (OPP) caters to Cairo, Egypt. Passenger count for 2024 hovered near roughly 11.2 million passengers.
+
+Opened back in 2002, Beijing International Airport (FID) caters to Beijing, China. Passenger count for 2024 hovered near some 18.4 million flyers.
+
+Serving Mexico City in Mexico, Mexico City International Airport—airport code KJC—opened its doors in 1985 and moved roughly 84.2 million passengers during 2024.
+
+Opened back in 1934, Paris International Airport (EUX) caters to Paris, France. Passenger count for 2024 hovered near roughly 67.3 million passengers.
+
+Athens International Airport (ODV) started operations in 1976; today it serves Athens, Greece, handling roughly 67.9 million passengers in 2024.
+
+Opened back in 1955, Moscow International Airport (EYS) caters to Moscow, Russia. Passenger count for 2024 hovered near some 102.7 million flyers.
+
+Serving Cape Town in South Africa, Cape Town International Airport—airport code BSP—opened its doors in 1978 and moved roughly 7.5 million passengers during 2024.
+
+Opened back in 1922, Berlin International Airport (YQT) caters to Berlin, Germany. Passenger count for 2024 hovered near roughly 80.2 million passengers.
+
+Vienna International Airport (IATA: CJG) has linked Vienna, Austria, to the world since 1939 and saw roughly 16.2 million passengers last year (2024).
+
+Serving Vienna in Austria, Vienna International Airport—airport code EDI—opened its doors in 1939 and moved roughly 45.2 million passengers during 2024.
+
+Opened back in 1995, Mumbai International Airport (QFO) caters to Mumbai, India. Passenger count for 2024 hovered near roughly 66.4 million passengers.
+
+Buenos Aires International Airport (IATA: HNV) has linked Buenos Aires, Argentina, to the world since 1926 and saw 117.5 million travelers last year (2024).
+
+Serving Chicago in USA, Chicago International Airport—airport code ZDX—opened its doors in 1956 and moved 86.8 million travelers during 2024.
+
+Helsinki International Airport (BYE) started operations in 1993; today it serves Helsinki, Finland, handling some 44.8 million flyers in 2024.
+
+Opened back in 1929, Lima International Airport (DJO) caters to Lima, Peru. Passenger count for 2024 hovered near roughly 9.6 million passengers.
+
+Opened back in 2003, Toronto International Airport (ZGI) caters to Toronto, Canada. Passenger count for 2024 hovered near some 53.5 million flyers.
+
+Prague International Airport (UUE) started operations in 1921; today it serves Prague, Czech Republic, handling roughly 25.5 million passengers in 2024.
+
+Tokyo International Airport (SUK) started operations in 1944; today it serves Tokyo, Japan, handling 52.4 million travelers in 2024.
+
+Vienna International Airport (IATA: AMN) has linked Vienna, Austria, to the world since 1955 and saw some 105.4 million flyers last year (2024).
+
+Opened back in 1930, New York International Airport (JJH) caters to New York, USA. Passenger count for 2024 hovered near roughly 48.1 million passengers.
+
+Mumbai International Airport (UJM) started operations in 1974; today it serves Mumbai, India, handling 33.3 million travelers in 2024.
+
+Dubai International Airport (IATA: YNM) has linked Dubai, UAE, to the world since 2005 and saw roughly 77.9 million passengers last year (2024).
+
+Beijing International Airport (TZD) started operations in 1978; today it serves Beijing, China, handling roughly 81.8 million passengers in 2024.
+
+Opened back in 1925, Los Angeles International Airport (NUY) caters to Los Angeles, USA. Passenger count for 2024 hovered near 56.5 million travelers.
+
+Serving Sydney in Australia, Sydney International Airport—airport code WVB—opened its doors in 1975 and moved 44.0 million travelers during 2024.
+
+Serving Beijing in China, Beijing International Airport—airport code TLO—opened its doors in 2010 and moved some 62.0 million flyers during 2024.
+
+Serving Beijing in China, Beijing International Airport—airport code OOC—opened its doors in 2013 and moved some 105.9 million flyers during 2024.
+
+Serving Istanbul in Turkey, Istanbul International Airport—airport code GZK—opened its doors in 2012 and moved 52.1 million travelers during 2024.
+
+Mexico City International Airport (IATA: JIO) has linked Mexico City, Mexico, to the world since 2012 and saw roughly 10.1 million passengers last year (2024).
+
+Opened back in 1920, Toronto International Airport (RTZ) caters to Toronto, Canada. Passenger count for 2024 hovered near some 21.1 million flyers.
+
+Opened back in 1978, Madrid International Airport (KMX) caters to Madrid, Spain. Passenger count for 2024 hovered near roughly 70.4 million passengers.
+
+Opened back in 1948, Toronto International Airport (YWK) caters to Toronto, Canada. Passenger count for 2024 hovered near roughly 112.6 million passengers.
+
+Serving Helsinki in Finland, Helsinki International Airport—airport code QPU—opened its doors in 1935 and moved some 52.0 million flyers during 2024.
+
+Madrid International Airport (IATA: GQD) has linked Madrid, Spain, to the world since 1930 and saw some 22.4 million flyers last year (2024).
+
+London International Airport (RHT) started operations in 1944; today it serves London, UK, handling 78.2 million travelers in 2024.
+
+Serving Cape Town in South Africa, Cape Town International Airport—airport code FUC—opened its doors in 1923 and moved some 110.6 million flyers during 2024.
+
+Prague International Airport (IATA: SFN) has linked Prague, Czech Republic, to the world since 1926 and saw roughly 114.3 million passengers last year (2024).
+
+Rome International Airport (TKZ) started operations in 1967; today it serves Rome, Italy, handling roughly 84.7 million passengers in 2024.
+
+Seoul International Airport (FQN) started operations in 1947; today it serves Seoul, South Korea, handling 103.4 million travelers in 2024.
+
+Serving Dublin in Ireland, Dublin International Airport—airport code YVB—opened its doors in 1940 and moved roughly 57.2 million passengers during 2024.
+
+Buenos Aires International Airport (IATA: MYN) has linked Buenos Aires, Argentina, to the world since 1995 and saw 72.2 million travelers last year (2024).
+
+Rio de Janeiro International Airport (IATA: NLW) has linked Rio de Janeiro, Brazil, to the world since 2009 and saw some 40.0 million flyers last year (2024).
+
+Serving Sydney in Australia, Sydney International Airport—airport code REO—opened its doors in 1965 and moved some 22.3 million flyers during 2024.
+
+Opened back in 1996, Athens International Airport (MTR) caters to Athens, Greece. Passenger count for 2024 hovered near roughly 17.7 million passengers.
+
+Lisbon International Airport (IATA: NCZ) has linked Lisbon, Portugal, to the world since 1932 and saw some 81.7 million flyers last year (2024).
+
+Athens International Airport (IATA: RBO) has linked Athens, Greece, to the world since 1942 and saw some 108.9 million flyers last year (2024).
+
+Helsinki International Airport (ISV) started operations in 1981; today it serves Helsinki, Finland, handling 57.4 million travelers in 2024.
+
+Serving Prague in Czech Republic, Prague International Airport—airport code YSG—opened its doors in 2001 and moved roughly 108.3 million passengers during 2024.
+
+Mumbai International Airport (CNQ) started operations in 2012; today it serves Mumbai, India, handling roughly 74.6 million passengers in 2024.
+
+Serving Mexico City in Mexico, Mexico City International Airport—airport code VPU—opened its doors in 1942 and moved some 25.7 million flyers during 2024.
+
+Mumbai International Airport (IATA: AXO) has linked Mumbai, India, to the world since 1996 and saw 80.2 million travelers last year (2024).
+
+Serving Berlin in Germany, Berlin International Airport—airport code EFN—opened its doors in 1953 and moved 114.0 million travelers during 2024.
+
+Madrid International Airport (IATA: ICM) has linked Madrid, Spain, to the world since 1981 and saw some 34.7 million flyers last year (2024).
+
+Opened back in 1992, Seoul International Airport (CFR) caters to Seoul, South Korea. Passenger count for 2024 hovered near roughly 69.4 million passengers.
+
+Opened back in 1954, Sydney International Airport (ARL) caters to Sydney, Australia. Passenger count for 2024 hovered near roughly 55.4 million passengers.
+
+Prague International Airport (IATA: HAY) has linked Prague, Czech Republic, to the world since 1932 and saw some 6.3 million flyers last year (2024).
+
+Rome International Airport (SUN) started operations in 1975; today it serves Rome, Italy, handling some 79.2 million flyers in 2024.
+
+Serving Bangkok in Thailand, Bangkok International Airport—airport code BQN—opened its doors in 1951 and moved some 86.1 million flyers during 2024.
+
+Vienna International Airport (MBX) started operations in 1940; today it serves Vienna, Austria, handling some 82.0 million flyers in 2024.
+
+Rio de Janeiro International Airport (EWV) started operations in 1934; today it serves Rio de Janeiro, Brazil, handling 42.2 million travelers in 2024.
+
+Serving Rio de Janeiro in Brazil, Rio de Janeiro International Airport—airport code BDX—opened its doors in 1936 and moved 118.3 million travelers during 2024.
+
+Serving Lima in Peru, Lima International Airport—airport code BBN—opened its doors in 1958 and moved some 12.1 million flyers during 2024.
+
+Serving Prague in Czech Republic, Prague International Airport—airport code SVM—opened its doors in 1973 and moved 103.0 million travelers during 2024.
+
+Opened back in 1982, Dublin International Airport (FFY) caters to Dublin, Ireland. Passenger count for 2024 hovered near 87.8 million travelers.
+
+Opened back in 1940, Madrid International Airport (LTC) caters to Madrid, Spain. Passenger count for 2024 hovered near some 7.2 million flyers.
+
+London International Airport (IATA: DJE) has linked London, UK, to the world since 2021 and saw roughly 61.2 million passengers last year (2024).
+
+Seoul International Airport (MQG) started operations in 1932; today it serves Seoul, South Korea, handling some 21.3 million flyers in 2024.
+
+Cairo International Airport (IATA: XHQ) has linked Cairo, Egypt, to the world since 2021 and saw 63.2 million travelers last year (2024).
+
+Helsinki International Airport (IATA: LDP) has linked Helsinki, Finland, to the world since 1934 and saw roughly 70.4 million passengers last year (2024).
+
+Serving Moscow in Russia, Moscow International Airport—airport code FRJ—opened its doors in 2016 and moved roughly 104.8 million passengers during 2024.
+
+Chicago International Airport (JJT) started operations in 1999; today it serves Chicago, USA, handling 102.2 million travelers in 2024.
+
+London International Airport (IATA: CME) has linked London, UK, to the world since 2003 and saw some 111.1 million flyers last year (2024).
+
+Rome International Airport (IATA: PCW) has linked Rome, Italy, to the world since 1921 and saw 29.1 million travelers last year (2024).
+
+Serving Los Angeles in USA, Los Angeles International Airport—airport code FNO—opened its doors in 1948 and moved roughly 46.3 million passengers during 2024.
+
+Serving Los Angeles in USA, Los Angeles International Airport—airport code RCF—opened its doors in 1963 and moved some 60.8 million flyers during 2024.
+
+Opened back in 1946, New York International Airport (KFO) caters to New York, USA. Passenger count for 2024 hovered near roughly 68.3 million passengers.
+
+Serving Prague in Czech Republic, Prague International Airport—airport code LWH—opened its doors in 1931 and moved some 50.4 million flyers during 2024.

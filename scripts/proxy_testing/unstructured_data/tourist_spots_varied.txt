@@ -1,0 +1,210 @@
+### Prompt
+You will receive one descriptive snippet. Parse it and return **only** JSON that fits this schema exactly:
+{
+  "name": "string",
+  "city": "string",
+  "country": "string",
+  "annual_visitors_millions": "number",
+  "year_opened": "number"
+}
+---
+
+Dating to 1756, Crystal Arch remains a must‑see in Dubai, UAE, luring about 3.6 million tourists a year.
+
+The Wild Peak, located in the heart of Rio de Janeiro, Brazil, draws 24.2 million per year; it has stood tall since 1916.
+
+Dating to 1990, Blue Falls remains a must‑see in Rio de Janeiro, Brazil, luring around one million tourists a year.
+
+Dating to 1612, Sacred Palace remains a must‑see in Buenos Aires, Argentina, luring about 20.6 million tourists a year.
+
+Since 1664, the Crystal Bridge in Tokyo, Japan has welcomed 6.7 million visitors each year.
+
+Floating Cathedral—an icon of New York, USA—first opened its gates in 1825 and now attracts 1.2 million annually.
+
+The Royal Bridge, located in the heart of Chicago, USA, draws 11.8 million per year; it has stood tall since 1915.
+
+Dating to 1798, Wild Peak remains a must‑see in Prague, Czech Republic, luring 3.5 million tourists a year.
+
+Dating to 1807, Hidden Harbor remains a must‑see in Chicago, USA, luring about 9.1 million tourists a year.
+
+Wild Peak—an icon of Vienna, Austria—first opened its gates in 1939 and now attracts 8.1 million annually.
+
+The Wild Plaza, located in the heart of Toronto, Canada, draws 23.8 million per year; it has stood tall since 1820.
+
+Since 1842, the Wild Island in Buenos Aires, Argentina has welcomed about 16.7 million visitors each year.
+
+Since 1998, the Royal Falls in Cape Town, South Africa has welcomed 10.7 million visitors each year.
+
+Built back in 2001, Serene Temple sits in Cairo (Egypt) and sees around three million people flocking to it every twelve months.
+
+Hidden Park—an icon of Beijing, China—first opened its gates in 1805 and now attracts 22.6 million annually.
+
+Built back in 2004, Crystal Fortress sits in Dubai (UAE) and sees about 2.1 million people flocking to it every twelve months.
+
+The Golden Bridge, located in the heart of Sydney, Australia, draws 14.8 million per year; it has stood tall since 1857.
+
+Built back in 1958, Sunset Lagoon sits in Bangkok (Thailand) and sees 22.6 million people flocking to it every twelve months.
+
+Dating to 1634, Serene Cathedral remains a must‑see in Los Angeles, USA, luring about 4.1 million tourists a year.
+
+Built back in 1910, Hidden Lagoon sits in Bangkok (Thailand) and sees around sixteen million people flocking to it every twelve months.
+
+Since 1853, the Grand Bridge in Seoul, South Korea has welcomed 7.8 million visitors each year.
+
+The Royal Plaza, located in the heart of Los Angeles, USA, draws about 28.2 million per year; it has stood tall since 1704.
+
+Built back in 1923, Silver Canyon sits in Cape Town (South Africa) and sees 18.7 million people flocking to it every twelve months.
+
+Dating to 1641, Serene Palace remains a must‑see in Paris, France, luring about 20.4 million tourists a year.
+
+Built back in 1882, Royal Canyon sits in Dubai (UAE) and sees 6.8 million people flocking to it every twelve months.
+
+The Silver Island, located in the heart of Cairo, Egypt, draws 16.9 million per year; it has stood tall since 2021.
+
+Built back in 1679, Sacred Cathedral sits in Los Angeles (USA) and sees 9.8 million people flocking to it every twelve months.
+
+The Sacred Bridge, located in the heart of New York, USA, draws 23.6 million per year; it has stood tall since 1939.
+
+Built back in 1612, Wild Park sits in Istanbul (Turkey) and sees 1.9 million people flocking to it every twelve months.
+
+Since 1604, the Sunset Park in Lisbon, Portugal has welcomed about 1.7 million visitors each year.
+
+Emerald Harbor—an icon of Istanbul, Turkey—first opened its gates in 1843 and now attracts 25.9 million annually.
+
+Sunset Park—an icon of Tokyo, Japan—first opened its gates in 1662 and now attracts about 19.2 million annually.
+
+Emerald Lagoon—an icon of Vienna, Austria—first opened its gates in 1863 and now attracts about 16.5 million annually.
+
+Blue Lagoon—an icon of Dubai, UAE—first opened its gates in 1744 and now attracts 15.3 million annually.
+
+The Sacred Canyon, located in the heart of Beijing, China, draws 1.8 million per year; it has stood tall since 1664.
+
+Blue Plaza—an icon of Tokyo, Japan—first opened its gates in 1695 and now attracts about 23.8 million annually.
+
+The Serene Falls, located in the heart of Vienna, Austria, draws about 21.3 million per year; it has stood tall since 1616.
+
+The Wild Palace, located in the heart of London, UK, draws 9.2 million per year; it has stood tall since 1796.
+
+Dating to 1961, Hidden Peak remains a must‑see in Seoul, South Korea, luring 26.3 million tourists a year.
+
+Serene Arch—an icon of Dublin, Ireland—first opened its gates in 1602 and now attracts 16.6 million annually.
+
+The Ancient Bridge, located in the heart of Bangkok, Thailand, draws 9.1 million per year; it has stood tall since 1791.
+
+Since 1620, the Wild Harbor in Beijing, China has welcomed about 23.1 million visitors each year.
+
+The Golden Park, located in the heart of Sydney, Australia, draws about 12.2 million per year; it has stood tall since 2008.
+
+The Grand Canyon, located in the heart of New York, USA, draws about 29.1 million per year; it has stood tall since 1854.
+
+Emerald Island—an icon of Cape Town, South Africa—first opened its gates in 1615 and now attracts about 7.3 million annually.
+
+The Sacred Temple, located in the heart of Dubai, UAE, draws about 5.0 million per year; it has stood tall since 1880.
+
+The Blue Cathedral, located in the heart of Berlin, Germany, draws about 9.6 million per year; it has stood tall since 1638.
+
+Dating to 2015, Emerald Plaza remains a must‑see in Buenos Aires, Argentina, luring about 23.9 million tourists a year.
+
+Since 1976, the Grand Canyon in Rio de Janeiro, Brazil has welcomed 27.4 million visitors each year.
+
+Built back in 1600, Emerald Falls sits in Mexico City (Mexico) and sees about 15.9 million people flocking to it every twelve months.
+
+Since 1754, the Majestic Plaza in Tokyo, Japan has welcomed about 8.2 million visitors each year.
+
+Dating to 1913, Golden Peak remains a must‑see in Athens, Greece, luring about 13.9 million tourists a year.
+
+Since 1888, the Golden Falls in Dubai, UAE has welcomed 13.0 million visitors each year.
+
+Built back in 1916, Floating Park sits in Beijing (China) and sees about 13.7 million people flocking to it every twelve months.
+
+The Royal Park, located in the heart of London, UK, draws about 10.4 million per year; it has stood tall since 1636.
+
+The Blue Temple, located in the heart of Bangkok, Thailand, draws about 28.8 million per year; it has stood tall since 1895.
+
+Dating to 1724, Royal Temple remains a must‑see in Dublin, Ireland, luring 0.7 million tourists a year.
+
+Built back in 2003, Grand Park sits in London (UK) and sees 4.7 million people flocking to it every twelve months.
+
+Dating to 1881, Emerald Bridge remains a must‑see in Istanbul, Turkey, luring 0.8 million tourists a year.
+
+Dating to 1660, Grand Cathedral remains a must‑see in Chicago, USA, luring 24.2 million tourists a year.
+
+Dating to 1709, Sacred Bridge remains a must‑see in London, UK, luring 6.5 million tourists a year.
+
+Built back in 1865, Blue Palace sits in Mexico City (Mexico) and sees about 26.8 million people flocking to it every twelve months.
+
+Wild Harbor—an icon of Lima, Peru—first opened its gates in 1955 and now attracts 6.8 million annually.
+
+Hidden Park—an icon of Rio de Janeiro, Brazil—first opened its gates in 2000 and now attracts about 26.3 million annually.
+
+Dating to 1840, Crystal Park remains a must‑see in Istanbul, Turkey, luring about 12.3 million tourists a year.
+
+Built back in 1620, Silver Plaza sits in Vienna (Austria) and sees 13.6 million people flocking to it every twelve months.
+
+Dating to 2015, Serene Cathedral remains a must‑see in Mumbai, India, luring about 29.4 million tourists a year.
+
+Hidden Palace—an icon of Dubai, UAE—first opened its gates in 1986 and now attracts 5.2 million annually.
+
+Built back in 1619, Majestic Harbor sits in Madrid (Spain) and sees about 23.1 million people flocking to it every twelve months.
+
+Built back in 1740, Grand Arch sits in Bangkok (Thailand) and sees about 23.5 million people flocking to it every twelve months.
+
+Since 1731, the Royal Plaza in Mexico City, Mexico has welcomed 22.0 million visitors each year.
+
+The Royal Falls, located in the heart of Tokyo, Japan, draws 20.9 million per year; it has stood tall since 1859.
+
+Built back in 1637, Ancient Temple sits in Sydney (Australia) and sees about 25.4 million people flocking to it every twelve months.
+
+Crystal Harbor—an icon of Seoul, South Korea—first opened its gates in 1634 and now attracts 27.1 million annually.
+
+Silver Falls—an icon of Helsinki, Finland—first opened its gates in 1902 and now attracts about 0.9 million annually.
+
+Since 1757, the Sacred Temple in Dubai, UAE has welcomed 17.1 million visitors each year.
+
+Built back in 2019, Golden Plaza sits in Los Angeles (USA) and sees 15.8 million people flocking to it every twelve months.
+
+Dating to 2014, Ancient Harbor remains a must‑see in Buenos Aires, Argentina, luring 28.4 million tourists a year.
+
+The Emerald Bridge, located in the heart of Mexico City, Mexico, draws about 27.9 million per year; it has stood tall since 1740.
+
+Built back in 1776, Sacred Gardens sits in Toronto (Canada) and sees 10.8 million people flocking to it every twelve months.
+
+Built back in 1997, Hidden Plaza sits in Moscow (Russia) and sees 26.0 million people flocking to it every twelve months.
+
+Wild Plaza—an icon of Istanbul, Turkey—first opened its gates in 1724 and now attracts 7.2 million annually.
+
+Blue Temple—an icon of Rome, Italy—first opened its gates in 1799 and now attracts about 4.3 million annually.
+
+Sacred Island—an icon of Berlin, Germany—first opened its gates in 1728 and now attracts 18.8 million annually.
+
+Built back in 1769, Hidden Island sits in Los Angeles (USA) and sees 19.3 million people flocking to it every twelve months.
+
+Ancient Fortress—an icon of Moscow, Russia—first opened its gates in 1717 and now attracts 1.9 million annually.
+
+The Sacred Palace, located in the heart of Chicago, USA, draws 13.0 million per year; it has stood tall since 1861.
+
+Crystal Cathedral—an icon of Berlin, Germany—first opened its gates in 1739 and now attracts 1.3 million annually.
+
+The Sacred Arch, located in the heart of Dubai, UAE, draws about 15.6 million per year; it has stood tall since 1986.
+
+Dating to 1957, Hidden Plaza remains a must‑see in Athens, Greece, luring 2.3 million tourists a year.
+
+Since 1937, the Blue Fortress in Prague, Czech Republic has welcomed about 0.5 million visitors each year.
+
+Royal Lagoon—an icon of Mumbai, India—first opened its gates in 1921 and now attracts about 7.2 million annually.
+
+Since 1871, the Floating Fortress in Prague, Czech Republic has welcomed 1.4 million visitors each year.
+
+The Blue Peak, located in the heart of Mexico City, Mexico, draws 1.1 million per year; it has stood tall since 1962.
+
+Crystal Gardens—an icon of Rio de Janeiro, Brazil—first opened its gates in 2000 and now attracts about 14.2 million annually.
+
+Crystal Canyon—an icon of Helsinki, Finland—first opened its gates in 1736 and now attracts 6.5 million annually.
+
+Since 1667, the Majestic Harbor in Paris, France has welcomed 9.8 million visitors each year.
+
+Dating to 1805, Serene Plaza remains a must‑see in Cairo, Egypt, luring about 1.8 million tourists a year.
+
+Since 1958, the Sunset Peak in New York, USA has welcomed 14.7 million visitors each year.
+
+Built back in 1693, Crystal Falls sits in Mumbai (India) and sees 8.2 million people flocking to it every twelve months.

@@ -1,0 +1,210 @@
+### Prompt
+You will receive one descriptive snippet. Parse it and return **only** JSON that fits this schema exactly:
+{
+  "laureate_name": "string",
+  "year_awarded": "number",
+  "citation": "string",
+  "nationality": "string",
+  "age_at_award": "number"
+}
+---
+
+At 88 years old, Taylor Wilson—a Chinese scientist—was honored with the  Nobel Prize in Physics in 1942 thanks to laser science breakthroughs.
+
+At 62 years old, Robin Jackson—a Italian scientist—was honored with the  Nobel Prize in Physics in 1945 thanks to condensed matter breakthroughs.
+
+The Nobel Committee awarded its 1905 Physics prize to Sydney Wilson (Italian), then aged 55, citing path‑finding advances in gravitational waves.
+
+The Nobel Committee awarded its 1937 Physics prize to Robin Jones (German), then aged 88, citing path‑finding advances in astrophysics.
+
+Japanese physicist Dana Johnson clinched the 1959 Physics Nobel at age 90 for trail‑blazing work in astrophysics.
+
+At 86 years old, Jamie Garcia—a Indian scientist—was honored with the  Nobel Prize in Physics in 1988 thanks to astrophysics breakthroughs.
+
+Indian physicist Riley Brown clinched the 1918 Physics Nobel at age 78 for trail‑blazing work in quantum optics.
+
+The Nobel Committee awarded its 1954 Physics prize to Jordan Jones (Brazilian), then aged 48, citing path‑finding advances in condensed matter.
+
+Swiss physicist Sydney Anderson clinched the 2007 Physics Nobel at age 42 for trail‑blazing work in quantum optics.
+
+Italian physicist Sydney Wilson clinched the 1915 Physics Nobel at age 89 for trail‑blazing work in gravitational waves.
+
+At 36 years old, Drew Johnson—a Swiss scientist—was honored with the  Nobel Prize in Physics in 1903 thanks to laser science breakthroughs.
+
+The Nobel Committee awarded its 2022 Physics prize to Drew Martin (Chinese), then aged 51, citing path‑finding advances in astrophysics.
+
+British physicist Robin Jones clinched the 1924 Physics Nobel at age 83 for trail‑blazing work in gravitational waves.
+
+The Nobel Committee awarded its 1901 Physics prize to Adrian Williams (Indian), then aged 34, citing path‑finding advances in gravitational waves.
+
+At 75 years old, Morgan Brown—a Indian scientist—was honored with the  Nobel Prize in Physics in 2018 thanks to gravitational waves breakthroughs.
+
+At 53 years old, Sydney White—a Swedish scientist—was honored with the  Nobel Prize in Physics in 1967 thanks to condensed matter breakthroughs.
+
+Canadian physicist Jordan Jones clinched the 1908 Physics Nobel at age 50 for trail‑blazing work in condensed matter.
+
+At 36 years old, Jordan Martin—a American scientist—was honored with the  Nobel Prize in Physics in 1916 thanks to astrophysics breakthroughs.
+
+German physicist Sydney Jones clinched the 1948 Physics Nobel at age 33 for trail‑blazing work in particle physics.
+
+At 38 years old, Robin Garcia—a Russian scientist—was honored with the  Nobel Prize in Physics in 2017 thanks to particle physics breakthroughs.
+
+The Nobel Committee awarded its 1947 Physics prize to Casey Jackson (Japanese), then aged 83, citing path‑finding advances in laser science.
+
+German physicist Taylor Johnson clinched the 1993 Physics Nobel at age 80 for trail‑blazing work in condensed matter.
+
+At 88 years old, Cameron Smith—a Brazilian scientist—was honored with the  Nobel Prize in Physics in 1995 thanks to laser science breakthroughs.
+
+At 48 years old, Adrian Smith—a German scientist—was honored with the  Nobel Prize in Physics in 2013 thanks to astrophysics breakthroughs.
+
+At 42 years old, Dakota Thomas—a Swiss scientist—was honored with the  Nobel Prize in Physics in 2024 thanks to quantum optics breakthroughs.
+
+At 48 years old, Robin Smith—a British scientist—was honored with the  Nobel Prize in Physics in 1981 thanks to laser science breakthroughs.
+
+Indian physicist Riley Wilson clinched the 1990 Physics Nobel at age 73 for trail‑blazing work in quantum optics.
+
+Canadian physicist Riley Davis clinched the 1996 Physics Nobel at age 85 for trail‑blazing work in quantum optics.
+
+At 85 years old, Robin Thomas—a British scientist—was honored with the  Nobel Prize in Physics in 1941 thanks to astrophysics breakthroughs.
+
+At 62 years old, Taylor Thomas—a French scientist—was honored with the  Nobel Prize in Physics in 2015 thanks to astrophysics breakthroughs.
+
+At 60 years old, Riley Williams—a Japanese scientist—was honored with the  Nobel Prize in Physics in 1988 thanks to gravitational waves breakthroughs.
+
+At 74 years old, Jordan Jones—a Brazilian scientist—was honored with the  Nobel Prize in Physics in 2011 thanks to astrophysics breakthroughs.
+
+At 86 years old, Robin Miller—a French scientist—was honored with the  Nobel Prize in Physics in 1913 thanks to quantum optics breakthroughs.
+
+The Nobel Committee awarded its 1997 Physics prize to Jamie Brown (German), then aged 49, citing path‑finding advances in laser science.
+
+At 66 years old, Jordan Wilson—a Australian scientist—was honored with the  Nobel Prize in Physics in 2006 thanks to quantum optics breakthroughs.
+
+At 86 years old, Bailey Garcia—a Indian scientist—was honored with the  Nobel Prize in Physics in 1938 thanks to particle physics breakthroughs.
+
+The Nobel Committee awarded its 1990 Physics prize to Sydney Brown (British), then aged 85, citing path‑finding advances in particle physics.
+
+The Nobel Committee awarded its 1925 Physics prize to Dakota Thomas (Italian), then aged 44, citing path‑finding advances in condensed matter.
+
+The Nobel Committee awarded its 1997 Physics prize to Morgan Brown (Brazilian), then aged 79, citing path‑finding advances in quantum optics.
+
+At 89 years old, Riley Davis—a Chinese scientist—was honored with the  Nobel Prize in Physics in 1996 thanks to condensed matter breakthroughs.
+
+American physicist Dakota Johnson clinched the 1924 Physics Nobel at age 77 for trail‑blazing work in quantum optics.
+
+American physicist Dana Johnson clinched the 1912 Physics Nobel at age 71 for trail‑blazing work in laser science.
+
+The Nobel Committee awarded its 2006 Physics prize to Morgan Martin (Brazilian), then aged 77, citing path‑finding advances in gravitational waves.
+
+At 68 years old, Jordan Miller—a Chinese scientist—was honored with the  Nobel Prize in Physics in 1904 thanks to condensed matter breakthroughs.
+
+At 54 years old, Dana Martin—a Russian scientist—was honored with the  Nobel Prize in Physics in 2013 thanks to quantum optics breakthroughs.
+
+The Nobel Committee awarded its 2005 Physics prize to Morgan Jones (Swedish), then aged 38, citing path‑finding advances in quantum optics.
+
+At 46 years old, Morgan Anderson—a Japanese scientist—was honored with the  Nobel Prize in Physics in 1937 thanks to laser science breakthroughs.
+
+At 72 years old, Cameron Jones—a Swedish scientist—was honored with the  Nobel Prize in Physics in 1911 thanks to astrophysics breakthroughs.
+
+At 47 years old, Dakota Wilson—a Swedish scientist—was honored with the  Nobel Prize in Physics in 1976 thanks to astrophysics breakthroughs.
+
+At 84 years old, Cameron Garcia—a Australian scientist—was honored with the  Nobel Prize in Physics in 1944 thanks to quantum optics breakthroughs.
+
+The Nobel Committee awarded its 2005 Physics prize to Riley Smith (Russian), then aged 83, citing path‑finding advances in laser science.
+
+Canadian physicist Alex White clinched the 1948 Physics Nobel at age 48 for trail‑blazing work in astrophysics.
+
+The Nobel Committee awarded its 2014 Physics prize to Dakota Wilson (Canadian), then aged 72, citing path‑finding advances in particle physics.
+
+German physicist Cameron Jackson clinched the 1940 Physics Nobel at age 67 for trail‑blazing work in condensed matter.
+
+At 35 years old, Jordan Wilson—a Russian scientist—was honored with the  Nobel Prize in Physics in 1962 thanks to laser science breakthroughs.
+
+Swedish physicist Riley Jones clinched the 1907 Physics Nobel at age 60 for trail‑blazing work in condensed matter.
+
+The Nobel Committee awarded its 1906 Physics prize to Jordan Garcia (Canadian), then aged 40, citing path‑finding advances in quantum optics.
+
+Swiss physicist Bailey Wilson clinched the 1995 Physics Nobel at age 67 for trail‑blazing work in condensed matter.
+
+The Nobel Committee awarded its 1960 Physics prize to Riley Jackson (Chinese), then aged 47, citing path‑finding advances in particle physics.
+
+The Nobel Committee awarded its 1944 Physics prize to Riley Davis (Canadian), then aged 42, citing path‑finding advances in astrophysics.
+
+At 36 years old, Adrian Jackson—a Japanese scientist—was honored with the  Nobel Prize in Physics in 1959 thanks to astrophysics breakthroughs.
+
+Canadian physicist Jordan Thomas clinched the 2017 Physics Nobel at age 89 for trail‑blazing work in quantum optics.
+
+The Nobel Committee awarded its 1972 Physics prize to Sydney Johnson (Brazilian), then aged 63, citing path‑finding advances in condensed matter.
+
+At 33 years old, Cameron Jones—a Brazilian scientist—was honored with the  Nobel Prize in Physics in 1955 thanks to astrophysics breakthroughs.
+
+The Nobel Committee awarded its 1964 Physics prize to Adrian Martin (Brazilian), then aged 76, citing path‑finding advances in quantum optics.
+
+At 82 years old, Dana Williams—a French scientist—was honored with the  Nobel Prize in Physics in 1955 thanks to astrophysics breakthroughs.
+
+At 67 years old, Casey Anderson—a British scientist—was honored with the  Nobel Prize in Physics in 1964 thanks to quantum optics breakthroughs.
+
+Swedish physicist Sydney Brown clinched the 1943 Physics Nobel at age 65 for trail‑blazing work in quantum optics.
+
+The Nobel Committee awarded its 1910 Physics prize to Sydney Williams (Australian), then aged 70, citing path‑finding advances in condensed matter.
+
+Brazilian physicist Riley Brown clinched the 1966 Physics Nobel at age 33 for trail‑blazing work in quantum optics.
+
+German physicist Riley Martin clinched the 1949 Physics Nobel at age 54 for trail‑blazing work in particle physics.
+
+At 83 years old, Adrian Brown—a British scientist—was honored with the  Nobel Prize in Physics in 1967 thanks to astrophysics breakthroughs.
+
+At 57 years old, Dana Wilson—a British scientist—was honored with the  Nobel Prize in Physics in 1996 thanks to gravitational waves breakthroughs.
+
+At 71 years old, Riley Brown—a Italian scientist—was honored with the  Nobel Prize in Physics in 1909 thanks to gravitational waves breakthroughs.
+
+The Nobel Committee awarded its 1994 Physics prize to Dana Smith (British), then aged 38, citing path‑finding advances in condensed matter.
+
+At 90 years old, Casey Thomas—a Chinese scientist—was honored with the  Nobel Prize in Physics in 1955 thanks to quantum optics breakthroughs.
+
+The Nobel Committee awarded its 1930 Physics prize to Adrian Garcia (French), then aged 52, citing path‑finding advances in quantum optics.
+
+Canadian physicist Jordan Wilson clinched the 1974 Physics Nobel at age 53 for trail‑blazing work in quantum optics.
+
+At 41 years old, Adrian Williams—a German scientist—was honored with the  Nobel Prize in Physics in 1984 thanks to particle physics breakthroughs.
+
+At 38 years old, Jamie Garcia—a Australian scientist—was honored with the  Nobel Prize in Physics in 1950 thanks to particle physics breakthroughs.
+
+The Nobel Committee awarded its 1995 Physics prize to Jamie Wilson (Chinese), then aged 50, citing path‑finding advances in quantum optics.
+
+The Nobel Committee awarded its 1981 Physics prize to Sydney Davis (Swiss), then aged 60, citing path‑finding advances in quantum optics.
+
+At 65 years old, Jordan Smith—a Brazilian scientist—was honored with the  Nobel Prize in Physics in 2019 thanks to particle physics breakthroughs.
+
+Australian physicist Alex Williams clinched the 1905 Physics Nobel at age 47 for trail‑blazing work in astrophysics.
+
+The Nobel Committee awarded its 1955 Physics prize to Robin Anderson (Swedish), then aged 79, citing path‑finding advances in condensed matter.
+
+Swedish physicist Drew Garcia clinched the 2022 Physics Nobel at age 34 for trail‑blazing work in gravitational waves.
+
+At 69 years old, Morgan Brown—a Australian scientist—was honored with the  Nobel Prize in Physics in 1951 thanks to laser science breakthroughs.
+
+The Nobel Committee awarded its 1981 Physics prize to Dana Smith (American), then aged 78, citing path‑finding advances in particle physics.
+
+At 78 years old, Alex Jones—a Swiss scientist—was honored with the  Nobel Prize in Physics in 1958 thanks to quantum optics breakthroughs.
+
+At 51 years old, Alex Smith—a Australian scientist—was honored with the  Nobel Prize in Physics in 1996 thanks to quantum optics breakthroughs.
+
+Brazilian physicist Drew Brown clinched the 1964 Physics Nobel at age 38 for trail‑blazing work in astrophysics.
+
+At 69 years old, Morgan Anderson—a French scientist—was honored with the  Nobel Prize in Physics in 1947 thanks to laser science breakthroughs.
+
+Chinese physicist Morgan Miller clinched the 1948 Physics Nobel at age 79 for trail‑blazing work in laser science.
+
+At 76 years old, Alex Martin—a Australian scientist—was honored with the  Nobel Prize in Physics in 1973 thanks to quantum optics breakthroughs.
+
+The Nobel Committee awarded its 1987 Physics prize to Alex Thomas (Chinese), then aged 62, citing path‑finding advances in condensed matter.
+
+Australian physicist Adrian Williams clinched the 1913 Physics Nobel at age 44 for trail‑blazing work in laser science.
+
+At 70 years old, Casey Harris—a Canadian scientist—was honored with the  Nobel Prize in Physics in 2022 thanks to particle physics breakthroughs.
+
+The Nobel Committee awarded its 1969 Physics prize to Cameron Anderson (Italian), then aged 82, citing path‑finding advances in quantum optics.
+
+The Nobel Committee awarded its 1919 Physics prize to Drew Johnson (Australian), then aged 34, citing path‑finding advances in astrophysics.
+
+The Nobel Committee awarded its 1926 Physics prize to Cameron White (Swiss), then aged 38, citing path‑finding advances in laser science.
