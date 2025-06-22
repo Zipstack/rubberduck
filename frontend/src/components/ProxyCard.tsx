@@ -35,6 +35,7 @@ const ProxyCard: React.FC<ProxyCardProps> = ({
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [showActionsDropdown, setShowActionsDropdown] = useState(false);
+  const [showDeleteWarning, setShowDeleteWarning] = useState(false);
 
   const handleAction = async (action: () => void) => {
     setIsLoading(true);
@@ -60,6 +61,15 @@ const ProxyCard: React.FC<ProxyCardProps> = ({
       vertex_ai: '🔍',
     };
     return icons[provider.toLowerCase()] || '🔧';
+  };
+
+  const handleDeleteClick = () => {
+    if (proxy.status === 'running') {
+      setShowDeleteWarning(true);
+      setTimeout(() => setShowDeleteWarning(false), 3000); // Hide warning after 3 seconds
+    } else {
+      onDelete(proxy.id);
+    }
   };
 
   return (
@@ -182,14 +192,29 @@ const ProxyCard: React.FC<ProxyCardProps> = ({
           </div>
 
           <button
-            onClick={() => onDelete(proxy.id)}
-            className="flex items-center space-x-1 px-3 py-1 bg-gray-50 text-gray-600 hover:bg-red-50 hover:text-red-700 rounded-md text-sm font-medium transition-colors"
+            onClick={handleDeleteClick}
+            className={`flex items-center space-x-1 px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+              proxy.status === 'running'
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                : 'bg-gray-50 text-gray-600 hover:bg-red-50 hover:text-red-700'
+            }`}
+            disabled={proxy.status === 'running'}
           >
             <TrashIcon className="h-4 w-4" />
             <span>Delete</span>
           </button>
         </div>
       </div>
+
+      {/* Delete warning message */}
+      {showDeleteWarning && (
+        <div className="mt-3 flex items-center space-x-2 p-2 bg-red-50 border border-red-200 rounded-md">
+          <ExclamationTriangleIcon className="h-4 w-4 text-red-600" />
+          <span className="text-xs text-red-700 font-medium">
+            Cannot delete running proxy. Stop the proxy first.
+          </span>
+        </div>
+      )}
 
       {/* Failure simulation indicator */}
       {proxy.failure_config && (

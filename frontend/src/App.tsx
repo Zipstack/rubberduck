@@ -8,6 +8,7 @@ import Dashboard from './pages/Dashboard';
 import Proxies from './pages/Proxies';
 import Logs from './pages/Logs';
 import Settings from './pages/Settings';
+import ProxyDesigns from './pages/ProxyDesigns';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, isLoading } = useAuth();
@@ -66,6 +67,14 @@ const AppRoutes: React.FC = () => {
         element={
           <ProtectedRoute>
             <Settings />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/designs"
+        element={
+          <ProtectedRoute>
+            <ProxyDesigns />
           </ProtectedRoute>
         }
       />
