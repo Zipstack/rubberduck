@@ -24,6 +24,7 @@ import questionary
 from rich.console import Console
 from rich.table import Table
 from rich import box
+import requests
 
 # Provider SDKs
 from openai import OpenAI, AzureOpenAI
@@ -59,10 +60,18 @@ class MetricsRecorder:
             'bytes': response_bytes
         })
         
-        if status_code != "EXC":
-            self.success_count += 1
-        else:
+        # Consider 2xx and 3xx as success, 4xx, 5xx, and EXC as failures
+        if status_code == "EXC":
             self.failure_count += 1
+        elif isinstance(status_code, str) and status_code.isdigit():
+            status_int = int(status_code)
+            if 200 <= status_int < 400:
+                self.success_count += 1
+            else:
+                self.failure_count += 1
+        else:
+            # Non-numeric status codes (other than EXC) treated as success for backwards compatibility
+            self.success_count += 1
         
         self.total_bytes += response_bytes
     
@@ -77,7 +86,16 @@ class MetricsRecorder:
                 'latency_stats': {}
             }
         
-        latencies = [r['latency_ms'] for r in self.results if r['status_code'] != "EXC"]
+        # Only include successful requests (2xx/3xx) in latency statistics
+        def is_successful_status(status_code):
+            if status_code == "EXC":
+                return False
+            if isinstance(status_code, str) and status_code.isdigit():
+                status_int = int(status_code)
+                return 200 <= status_int < 400
+            return True  # Non-numeric status codes treated as success for backwards compatibility
+        
+        latencies = [r['latency_ms'] for r in self.results if is_successful_status(r['status_code'])]
         
         if latencies:
             latencies.sort()
@@ -394,26 +412,96 @@ class ProviderClient:
             # Connect directly to AWS Bedrock if no proxy URL specified
             if proxy_url is None:
                 client = boto3.client('bedrock-runtime', region_name='us-east-1')
+                
+                def send_request(payload: str) -> Tuple[str, Any]:
+                    try:
+                        # Prepare request body based on model type
+                        if model.startswith("amazon.nova"):
+                            # Nova models use messages format with schemaVersion
+                            body = {
+                                "schemaVersion": "messages-v1",
+                                "messages": [{"role": "user", "content": [{"text": payload}]}],
+                                "inferenceConfig": {
+                                    "temperature": 0,
+                                    "maxTokens": 1000
+                                }
+                            }
+                        else:
+                            # Other models use prompt format
+                            body = {
+                                "prompt": payload,
+                                "temperature": 0,
+                                "max_tokens_to_sample": 1000
+                            }
+                        
+                        resp = client.invoke_model(
+                            modelId=model,
+                            body=json.dumps(body)
+                        )
+                        return "200", resp
+                    except Exception as e:
+                        return "EXC", str(e)
             else:
-                client = boto3.client(
-                    'bedrock-runtime',
-                    endpoint_url=proxy_url,
-                    region_name='us-east-1'
-                )
-            
-            def send_request(payload: str) -> Tuple[str, Any]:
-                try:
-                    resp = client.invoke_model(
-                        modelId=model,
-                        body=json.dumps({
-                            "prompt": payload,
-                            "temperature": 0,
-                            "max_tokens": 1000
-                        })
-                    )
-                    return "200", resp
-                except Exception as e:
-                    return "EXC", str(e)
+                # Use custom headers approach for proxy connections
+                # Get AWS credentials from environment
+                aws_access_key = os.getenv('AWS_ACCESS_KEY_ID')
+                aws_secret_key = os.getenv('AWS_SECRET_ACCESS_KEY')
+                aws_session_token = os.getenv('AWS_SESSION_TOKEN')
+                
+                if not aws_access_key or not aws_secret_key:
+                    raise ValueError("AWS credentials required: set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY environment variables")
+                
+                def send_request(payload: str) -> Tuple[str, Any]:
+                    try:
+                        # Prepare headers with AWS credentials
+                        headers = {
+                            "Content-Type": "application/json",
+                            "X-AWS-Access-Key": aws_access_key,
+                            "X-AWS-Secret-Key": aws_secret_key
+                        }
+                        
+                        # Add session token if available (for STS credentials)
+                        if aws_session_token:
+                            headers["X-AWS-Session-Token"] = aws_session_token
+                        
+                        # Prepare request body based on model type
+                        if model.startswith("amazon.nova"):
+                            # Nova models use messages format with schemaVersion
+                            body = {
+                                "schemaVersion": "messages-v1",
+                                "messages": [{"role": "user", "content": [{"text": payload}]}],
+                                "inferenceConfig": {
+                                    "temperature": 0,
+                                    "maxTokens": 1000
+                                }
+                            }
+                        else:
+                            # Other models use prompt format
+                            body = {
+                                "prompt": payload,
+                                "temperature": 0,
+                                "max_tokens_to_sample": 1000
+                            }
+                        
+                        # Make request to proxy with custom headers
+                        endpoint = f"/model/{model}/invoke"
+                        url = f"{proxy_url.rstrip('/')}{endpoint}"
+                        
+                        response = requests.post(
+                            url,
+                            json=body,
+                            headers=headers,
+                            timeout=timeout
+                        )
+                        
+                        # Return status and response
+                        if response.status_code == 200:
+                            return "200", response.json()
+                        else:
+                            return str(response.status_code), response.text
+                            
+                    except Exception as e:
+                        return "EXC", str(e)
             
             return send_request
         
@@ -522,8 +610,8 @@ def send_single_request(
     json_response: bool,
     log_file_handle=None,
     lock=None
-) -> Tuple[int, str, float, int]:
-    """Send a single request and return the results."""
+) -> Tuple[int, str, float, int, Optional[str]]:
+    """Send a single request and return the results with optional error message."""
     try:
         
         # Send request with timing
@@ -555,11 +643,22 @@ def send_single_request(
                 log_file_handle.write(json.dumps(log_entry) + "\n")
                 log_file_handle.flush()
         
-        return request_id, status_code, latency_ms, response_bytes
+        # Return with error message for EXC and HTTP error codes (4xx, 5xx)
+        if status_code == "EXC":
+            error_msg = str(response)
+        elif isinstance(status_code, str) and status_code.isdigit():
+            status_int = int(status_code)
+            if status_int >= 400:  # 4xx and 5xx errors
+                error_msg = str(response)
+            else:
+                error_msg = None
+        else:
+            error_msg = None
+        return request_id, status_code, latency_ms, response_bytes, error_msg
         
     except Exception as e:
         # Handle any exceptions in the request
-        return request_id, "EXC", 0.0, len(str(e))
+        return request_id, "EXC", 0.0, len(str(e)), str(e)
 
 
 def render_summary(summary: Dict[str, Any], output_format: str) -> str:
@@ -686,7 +785,7 @@ def main(
     if concurrency is None:
         concurrency = 1
     
-    # Selection mode (interactive only)
+    # Selection mode (interactive only - ask if not already specified)
     if interactive and selection_mode == "single-file":
         mode_choice = questionary.select(
             "Selection mode:",
@@ -703,6 +802,7 @@ def main(
         console.print(f"[cyan]Starting load test: {provider}/{model} with {num_requests} requests, concurrency: {concurrency} (direct connection)[/cyan]")
     else:
         console.print(f"[cyan]Starting load test: {provider}/{model} with {num_requests} requests, concurrency: {concurrency} via proxy {proxy_url}[/cyan]")
+    
     
     try:
         # Test proxy connectivity
@@ -733,15 +833,15 @@ def main(
             for i in range(num_requests):
                 console.print(f"[blue]Request {i+1}/{num_requests}[/blue]", end="")
                 
-                request_id, status_code, latency_ms, response_bytes = send_single_request(
+                request_id, status_code, latency_ms, response_bytes, error_msg = send_single_request(
                     i + 1, client_func, payloads[i], json_response, log_file_handle, lock
                 )
                 
                 # Record metrics
                 metrics.record(status_code, latency_ms, response_bytes)
                 
-                if status_code == "EXC":
-                    console.print(f" - {status_code} ({latency_ms:.2f}ms) - Error occurred")
+                if error_msg:
+                    console.print(f" - {status_code} ({latency_ms:.2f}ms) - [red]{error_msg}[/red]")
                 else:
                     console.print(f" - {status_code} ({latency_ms:.2f}ms)")
         else:
@@ -767,12 +867,15 @@ def main(
                     request_id = future_to_id[future]
                     
                     try:
-                        req_id, status_code, latency_ms, response_bytes = future.result()
+                        req_id, status_code, latency_ms, response_bytes, error_msg = future.result()
                         
                         # Record metrics
                         metrics.record(status_code, latency_ms, response_bytes)
                         
-                        console.print(f"[blue]Request {completed_count}/{num_requests} (ID: {req_id})[/blue] - {status_code} ({latency_ms:.2f}ms)")
+                        if error_msg:
+                            console.print(f"[blue]Request {completed_count}/{num_requests} (ID: {req_id})[/blue] - {status_code} ({latency_ms:.2f}ms) - [red]{error_msg}[/red]")
+                        else:
+                            console.print(f"[blue]Request {completed_count}/{num_requests} (ID: {req_id})[/blue] - {status_code} ({latency_ms:.2f}ms)")
                         
                     except Exception as e:
                         console.print(f"[red]Request {request_id} failed: {e}[/red]")

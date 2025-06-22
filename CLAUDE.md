@@ -9,6 +9,28 @@ A default user is automatically created on first startup if no users exist in th
 
 This allows immediate access to the application without requiring registration. The default user has the same capabilities as any other user and can create and manage proxy instances.
 
+## AWS Bedrock Proxy Support
+
+✅ **COMPLETED**: AWS Bedrock proxy implementation with dual-mode authentication:
+
+### Custom Headers Mode (Recommended)
+- Use `X-AWS-Access-Key` and `X-AWS-Secret-Key` headers
+- Proxy re-signs requests with client credentials
+- Full caching, error injection, and logging support
+- Test with: `python test_bedrock_unsigned.py`
+
+### Endpoint Override Mode (Limited)  
+- Use boto3 with `endpoint_url='http://localhost:8009'`
+- Limited by AWS SigV4 signature mismatch issues
+- Test with: `python test_bedrock_proxy_aware.py`
+
+### Documentation
+- Complete implementation guide: `BEDROCK_PROXY_GUIDE.md`
+- Error testing: `python test_bedrock_errors.py`
+- Cache testing: `python test_bedrock_caching.py`
+
+**Key Insight**: FastAPI cannot implement traditional HTTP CONNECT proxies due to lack of CONNECT method support. Our API reverse proxy approach provides full functionality for LLM use cases.
+
 ## Notes
 
 - For Rubberduck, use the venv in the project root. For the testing script, use the venv at @scripts/proxy_testing/. Do not use the system Python.
