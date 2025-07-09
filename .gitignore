@@ -197,3 +197,7 @@ cython_debug/
 *.db
 data/*.db
 test_proxy.db
+
+# macOS
+.DS_Store
+**/.DS_Store
