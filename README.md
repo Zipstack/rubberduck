@@ -9,6 +9,10 @@ Rubberduck provides caching, failure simulation, rate limiting, per-user proxy i
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-red.svg)
 ![React](https://img.shields.io/badge/React-19+-blue.svg)
 
+## 📸 Screenshots
+
+![Rubberduck Proxies Management](assets/rubberduck_proxies.png)
+
 ## ✨ Features
 
 ### 🔄 **LLM Provider Emulation**
@@ -46,10 +50,6 @@ Rubberduck provides caching, failure simulation, rate limiting, per-user proxy i
 - JWT-based authentication
 - Per-user proxy isolation
 - Email verification and password reset
-
-## 📸 Screenshots
-
-![Rubberduck Proxies Management](assets/rubberduck_proxies.png)
 
 ## 🚀 Quick Start
 
