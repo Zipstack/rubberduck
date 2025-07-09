@@ -346,13 +346,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [FastAPI Users](https://fastapi-users.github.io/) for authentication
 - All the amazing LLM providers that make this possible
 
-## 📞 Support
-
-- 📧 **Email**: support@rubberduck.dev
-- 🐛 **Issues**: [GitHub Issues](https://github.com/your-username/rubberduck/issues)
-- 💬 **Discussions**: [GitHub Discussions](https://github.com/your-username/rubberduck/discussions)
-- 📖 **Documentation**: [Wiki](https://github.com/your-username/rubberduck/wiki)
-
 ---
 
 <div align="center">
