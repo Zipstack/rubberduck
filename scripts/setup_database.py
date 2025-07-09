@@ -92,7 +92,7 @@ def main():
     print("=" * 40)
     
     print(f"Project root: {project_root}")
-    print(f"Database location: {project_root / 'rubberduck.db'}")
+    print(f"Database location: {project_root / 'data' / 'rubberduck.db'}")
     
     # Check current state
     missing_tables = check_tables_exist()

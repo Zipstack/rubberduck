@@ -45,13 +45,15 @@ pip install -r requirements.txt
 #### Initialize Database
 
 ```bash
-# Initialize the SQLite database
-python -c "
-import asyncio
-from src.rubberduck.database import init_db
-asyncio.run(init_db())
-"
+# Run the fresh installation script to set up the database
+./scripts/fresh_install.sh
 ```
+
+This script will:
+- Set up the database with all required tables
+- Run all database migrations
+- Create the default admin user (admin@example.com / admin)
+- Verify the database setup
 
 ### 3. Start Backend Server
 
@@ -60,13 +62,13 @@ asyncio.run(init_db())
 python run.py
 
 # Or with custom host/port
-python run.py --host 0.0.0.0 --port 8000
+python run.py --host 0.0.0.0 --port 9000
 ```
 
 The backend will be available at:
-- **API**: http://localhost:8000
-- **API Documentation**: http://localhost:8000/docs
-- **Health Check**: http://localhost:8000/healthz
+- **API**: http://localhost:9000
+- **API Documentation**: http://localhost:9000/docs
+- **Health Check**: http://localhost:9000/healthz
 
 ### 4. Frontend Setup
 

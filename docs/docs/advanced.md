@@ -297,7 +297,7 @@ services:
       - "9000:9000"
       - "5173:5173"
     environment:
-      - DATABASE_URL=sqlite:///app/rubberduck.db
+      - DATABASE_URL=sqlite:///app/data/rubberduck.db
       - REDIS_URL=redis://redis:6379
     volumes:
       - ./data:/app/data

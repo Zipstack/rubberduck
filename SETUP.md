@@ -32,8 +32,14 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### 2. Database Migration
+### 2. Database Setup
 
+**For standard setup, use the fresh installation script:**
+```bash
+./scripts/fresh_install.sh
+```
+
+**Advanced users only - Manual migration commands:**
 ```bash
 # Run all migrations to create tables
 alembic upgrade head
@@ -47,7 +53,7 @@ python scripts/setup_database.py
 ```bash
 # Backend (Terminal 1)
 source venv/bin/activate
-python -m rubberduck.main
+python run.py
 
 # Frontend (Terminal 2)
 cd frontend
@@ -84,13 +90,17 @@ If you see errors like "no such table: cache_entries":
 
 2. For fresh start:
    ```bash
-   rm rubberduck.db  # Remove existing database
+   # Recommended approach
+   ./scripts/fresh_install.sh
+   
+   # Alternative manual approach (advanced users)
+   rm data/rubberduck.db  # Remove existing database
    alembic upgrade head  # Recreate all tables
    ```
 
 ### Migration Issues
 
-Check migration status:
+**Advanced users only - Check migration status:**
 ```bash
 alembic current    # Show current migration
 alembic history    # Show all migrations
@@ -100,7 +110,7 @@ alembic history    # Show all migrations
 
 Ensure the database file is writable:
 ```bash
-chmod 664 rubberduck.db
+chmod 664 data/rubberduck.db
 ```
 
 ## Verification

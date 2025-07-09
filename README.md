@@ -47,6 +47,10 @@ Rubberduck provides caching, failure simulation, rate limiting, per-user proxy i
 - Per-user proxy isolation
 - Email verification and password reset
 
+## 📸 Screenshots
+
+![Rubberduck Proxies Management](assets/rubberduck_proxies.png)
+
 ## 🚀 Quick Start
 
 ### Prerequisites
@@ -69,11 +73,7 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 
 # Initialize database
-python -c "
-import asyncio
-from src.rubberduck.database import init_db
-asyncio.run(init_db())
-"
+./scripts/fresh_install.sh
 ```
 
 ### 2. Start Backend Server
@@ -87,9 +87,9 @@ python run.py --host 0.0.0.0 --port 8000
 ```
 
 The backend will be available at:
-- **API**: http://localhost:8000
-- **Documentation**: http://localhost:8000/docs
-- **Health Check**: http://localhost:8000/healthz
+- **API**: http://localhost:9000
+- **Documentation**: http://localhost:9000/docs
+- **Health Check**: http://localhost:9000/healthz
 
 ### 3. Setup & Start Frontend
 

@@ -28,9 +28,9 @@ source venv/bin/activate
 echo "🗄️  Setting up database..."
 
 # Remove existing database if it exists (for fresh install)
-if [ -f "rubberduck.db" ]; then
+if [ -f "data/rubberduck.db" ]; then
     echo "⚠️  Removing existing database..."
-    rm rubberduck.db
+    rm data/rubberduck.db
 fi
 
 # Run database migrations
@@ -47,7 +47,7 @@ echo ""
 echo "🚀 You can now start Rubberduck:"
 echo "   # Backend (in one terminal):"
 echo "   source venv/bin/activate"
-echo "   python -m rubberduck.main"
+echo "   python run.py"
 echo ""
 echo "   # Frontend (in another terminal):"
 echo "   cd frontend"
