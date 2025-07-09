@@ -383,6 +383,7 @@ class ProxyManager:
                 
                 return response
     
+    
     def start_proxy(self, proxy_id: int, provider_name: str, port: Optional[int] = None) -> int:
         """
         Start a proxy instance.

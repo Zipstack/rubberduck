@@ -471,7 +471,25 @@ const Proxies: React.FC = () => {
     setError(null);
     try {
       const data = await apiClient.getProxies();
-      setProxies(data);
+      
+      // Load failure_config for each proxy to enable feature indicators
+      const proxiesWithConfig = await Promise.all(
+        data.map(async (proxy: Proxy) => {
+          try {
+            const configResponse = await apiClient.getProxyFailureConfig(proxy.id);
+            return {
+              ...proxy,
+              failure_config: configResponse.failure_config
+            };
+          } catch (error) {
+            // If config fails to load, return proxy without config
+            console.warn(`Failed to load config for proxy ${proxy.id}:`, error);
+            return proxy;
+          }
+        })
+      );
+      
+      setProxies(proxiesWithConfig);
     } catch (error) {
       if (error instanceof ApiError) {
         setError(error.message);

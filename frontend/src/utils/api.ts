@@ -115,6 +115,16 @@ class ApiClient {
     return this.request<{ id: string; email: string; is_active: boolean; is_verified: boolean }>('/users/me');
   }
 
+  async changePassword(currentPassword: string, newPassword: string) {
+    return this.request<{ id: string; email: string; is_active: boolean; is_verified: boolean }>('/auth/change-password', {
+      method: 'PATCH',
+      body: JSON.stringify({
+        current_password: currentPassword,
+        password: newPassword,
+      }),
+    });
+  }
+
   // Health check
   async healthCheck() {
     return this.request<{ status: string; version: string; db_status?: string; running_proxy_count?: number }>('/healthz', {

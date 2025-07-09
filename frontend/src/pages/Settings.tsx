@@ -5,6 +5,7 @@ import {
   ShieldCheckIcon,
   KeyIcon,
   TrashIcon,
+  UserIcon,
 } from '@heroicons/react/24/outline';
 import { apiClient, ApiError } from '../utils/api';
 import { usePageTitle } from '../hooks/usePageTitle';
@@ -29,6 +30,16 @@ const Settings: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isClearingCache, setIsClearingCache] = useState(false);
   const [cacheMessage, setCacheMessage] = useState<string | null>(null);
+  
+  // Password change state
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  });
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [passwordMessage, setPasswordMessage] = useState<string | null>(null);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
   const handleSettingsChange = (key: string, value: any) => {
     setSettings(prev => ({ ...prev, [key]: value }));
@@ -74,6 +85,58 @@ const Settings: React.FC = () => {
       // Clear message after 5 seconds
       setTimeout(() => setCacheMessage(null), 5000);
     }
+  };
+
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsChangingPassword(true);
+    setPasswordMessage(null);
+
+    try {
+      // Validate passwords match
+      if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+        setPasswordMessage('New passwords do not match');
+        return;
+      }
+
+      // Validate password length
+      if (passwordForm.newPassword.length < 6) {
+        setPasswordMessage('New password must be at least 6 characters long');
+        return;
+      }
+
+      const response = await apiClient.changePassword(passwordForm.currentPassword, passwordForm.newPassword);
+      setPasswordMessage('Password changed successfully');
+      
+      // Reset form
+      setPasswordForm({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+      });
+
+      // Close modal after successful change
+      setTimeout(() => {
+        setIsPasswordModalOpen(false);
+        setPasswordMessage(null);
+      }, 2000);
+      
+    } catch (error) {
+      console.error('Password change error:', error);
+      if (error instanceof ApiError) {
+        setPasswordMessage(`Error: ${error.message}`);
+      } else {
+        setPasswordMessage('Failed to change password');
+      }
+    } finally {
+      setIsChangingPassword(false);
+      // Clear message after 5 seconds
+      setTimeout(() => setPasswordMessage(null), 5000);
+    }
+  };
+
+  const handlePasswordFormChange = (field: string, value: string) => {
+    setPasswordForm(prev => ({ ...prev, [field]: value }));
   };
 
   return (
@@ -226,7 +289,79 @@ const Settings: React.FC = () => {
           </div>
         </div>
 
-        {/* IP Filtering */}
+        {/* Left Column: Account and System stacked */}
+        <div className="space-y-6">
+          {/* Account Settings */}
+          <div className="card space-y-4">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
+                <UserIcon className="h-5 w-5" />
+              </div>
+              <h2 className="text-lg font-semibold text-gray-900">Account</h2>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div>
+                  <h3 className="text-sm font-medium text-gray-900">Password</h3>
+                  <p className="text-xs text-gray-500">Change your account password</p>
+                </div>
+                <button
+                  onClick={() => setIsPasswordModalOpen(true)}
+                  className="btn-secondary text-sm px-3 py-1.5"
+                >
+                  Change Password
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* System Settings */}
+          <div className="card space-y-4">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-yellow-50 text-yellow-600 rounded-lg">
+                <UserPlusIcon className="h-5 w-5" />
+              </div>
+              <h2 className="text-lg font-semibold text-gray-900">System</h2>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <label className="text-sm font-medium text-gray-900">Enable Metrics Collection</label>
+                  <p className="text-xs text-gray-500">Collect system performance metrics</p>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={settings.enableMetricsCollection}
+                    onChange={(e) => handleSettingsChange('enableMetricsCollection', e.target.checked)}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                </label>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <label className="text-sm font-medium text-gray-900">Enable Detailed Logging</label>
+                  <p className="text-xs text-gray-500">Log detailed request information</p>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={settings.enableDetailedLogging}
+                    onChange={(e) => handleSettingsChange('enableDetailedLogging', e.target.checked)}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column: IP Filtering */}
         <div className="card space-y-6">
           <div className="flex items-center space-x-3">
             <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
@@ -266,50 +401,6 @@ const Settings: React.FC = () => {
               <p className="text-xs text-gray-500 mt-1">
                 One IP/CIDR per line. These IPs will be blocked.
               </p>
-            </div>
-          </div>
-        </div>
-
-        {/* System Settings */}
-        <div className="card space-y-6">
-          <div className="flex items-center space-x-3">
-            <div className="p-2 bg-yellow-50 text-yellow-600 rounded-lg">
-              <UserPlusIcon className="h-5 w-5" />
-            </div>
-            <h2 className="text-lg font-semibold text-gray-900">System</h2>
-          </div>
-
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <label className="text-sm font-medium text-gray-900">Enable Metrics Collection</label>
-                <p className="text-xs text-gray-500">Collect system performance metrics</p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={settings.enableMetricsCollection}
-                  onChange={(e) => handleSettingsChange('enableMetricsCollection', e.target.checked)}
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-              </label>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div>
-                <label className="text-sm font-medium text-gray-900">Enable Detailed Logging</label>
-                <p className="text-xs text-gray-500">Log detailed request information</p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={settings.enableDetailedLogging}
-                  onChange={(e) => handleSettingsChange('enableDetailedLogging', e.target.checked)}
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-              </label>
             </div>
           </div>
         </div>
@@ -369,6 +460,111 @@ const Settings: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Password Change Modal */}
+      {isPasswordModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">Change Password</h3>
+              <button
+                onClick={() => {
+                  setIsPasswordModalOpen(false);
+                  setPasswordMessage(null);
+                  setPasswordForm({
+                    currentPassword: '',
+                    newPassword: '',
+                    confirmPassword: '',
+                  });
+                }}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <form onSubmit={handlePasswordChange} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-900 mb-2">
+                  Current Password
+                </label>
+                <input
+                  type="password"
+                  value={passwordForm.currentPassword}
+                  onChange={(e) => handlePasswordFormChange('currentPassword', e.target.value)}
+                  className="input-field"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-900 mb-2">
+                  New Password
+                </label>
+                <input
+                  type="password"
+                  value={passwordForm.newPassword}
+                  onChange={(e) => handlePasswordFormChange('newPassword', e.target.value)}
+                  className="input-field"
+                  minLength={6}
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-900 mb-2">
+                  Confirm New Password
+                </label>
+                <input
+                  type="password"
+                  value={passwordForm.confirmPassword}
+                  onChange={(e) => handlePasswordFormChange('confirmPassword', e.target.value)}
+                  className="input-field"
+                  minLength={6}
+                  required
+                />
+              </div>
+
+              {passwordMessage && (
+                <div className={`p-3 rounded-lg text-sm ${
+                  passwordMessage.includes('success') 
+                    ? 'bg-green-50 text-green-700 border border-green-200' 
+                    : 'bg-red-50 text-red-700 border border-red-200'
+                }`}>
+                  {passwordMessage}
+                </div>
+              )}
+
+              <div className="flex space-x-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsPasswordModalOpen(false);
+                    setPasswordMessage(null);
+                    setPasswordForm({
+                      currentPassword: '',
+                      newPassword: '',
+                      confirmPassword: '',
+                    });
+                  }}
+                  className="btn-secondary flex-1"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isChangingPassword}
+                  className="btn-primary flex-1"
+                >
+                  {isChangingPassword ? 'Changing...' : 'Change Password'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

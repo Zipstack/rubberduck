@@ -63,7 +63,21 @@ const ProxyConfigModal: React.FC<ProxyConfigModalProps> = ({
     setError(null);
     try {
       const response = await apiClient.getProxyFailureConfig(proxy.id);
-      setConfig(response.failure_config);
+      
+      // Ensure error_rates has the expected structure if empty
+      const loadedConfig = {
+        ...response.failure_config,
+        error_rates: response.failure_config.error_rates && Object.keys(response.failure_config.error_rates).length > 0
+          ? response.failure_config.error_rates
+          : {
+              429: 0.0,
+              500: 0.0,
+              502: 0.0,
+              503: 0.0,
+            }
+      };
+      
+      setConfig(loadedConfig);
     } catch (error) {
       if (error instanceof ApiError) {
         setError(error.message);
@@ -243,7 +257,8 @@ const ProxyConfigModal: React.FC<ProxyConfigModalProps> = ({
 
                   {config.error_injection_enabled && (
                     <div className="space-y-2">
-                      {Object.entries(config.error_rates).map(([statusCode, rate]) => (
+                      <div className="text-xs text-gray-500 mb-2">Error rates (0.0 - 1.0):</div>
+                      {Object.entries(config.error_rates || {}).map(([statusCode, rate]) => (
                         <div key={statusCode} className="flex items-center space-x-2">
                           <span className="w-12 text-sm text-gray-600">{statusCode}:</span>
                           <input
@@ -256,6 +271,7 @@ const ProxyConfigModal: React.FC<ProxyConfigModalProps> = ({
                               updateErrorRate(parseInt(statusCode), parseFloat(e.target.value) || 0)
                             }
                             className="flex-1 input-field"
+                            placeholder="0.0"
                           />
                         </div>
                       ))}

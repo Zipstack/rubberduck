@@ -9,6 +9,9 @@ import {
   CommandLineIcon,
   TrashIcon as CacheIcon,
   InformationCircleIcon,
+  ClockIcon,
+  ShieldCheckIcon,
+  NoSymbolIcon,
 } from '@heroicons/react/24/outline';
 import type { Proxy } from '../types';
 
@@ -61,6 +64,60 @@ const ProxyCard: React.FC<ProxyCardProps> = ({
       vertex_ai: '🔍',
     };
     return icons[provider.toLowerCase()] || '🔧';
+  };
+
+  const renderFeatureIndicators = () => {
+    // Always show all features with their enabled/disabled status
+    const features = [
+      {
+        icon: ClockIcon,
+        label: 'Timeout Simulation',
+        enabled: proxy.failure_config?.timeout_enabled || false,
+      },
+      {
+        icon: ExclamationTriangleIcon,
+        label: 'Error Injection',
+        enabled: proxy.failure_config?.error_injection_enabled || false,
+      },
+      {
+        icon: NoSymbolIcon,
+        label: 'Rate Limiting',
+        enabled: proxy.failure_config?.rate_limiting_enabled || false,
+      },
+      {
+        icon: ShieldCheckIcon,
+        label: 'IP Filtering',
+        enabled: proxy.failure_config?.ip_filtering_enabled || false,
+      },
+    ];
+
+    return (
+      <div className="mt-3 pt-3 border-t border-gray-100">
+        <div className="grid grid-cols-2 gap-x-6 gap-y-1">
+          {features.map((feature, index) => {
+            const IconComponent = feature.icon;
+            return (
+              <div 
+                key={index}
+                className="flex items-center justify-between text-sm"
+              >
+                <div className="flex items-center space-x-2">
+                  <IconComponent className={`h-4 w-4 ${feature.enabled ? 'text-gray-700' : 'text-gray-300'}`} />
+                  <span className={`${feature.enabled ? 'text-gray-700' : 'text-gray-400'}`}>
+                    {feature.label}:
+                  </span>
+                </div>
+                {feature.enabled ? (
+                  <span className="text-green-600">✓</span>
+                ) : (
+                  <span className="text-gray-300">✗</span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
   };
 
   const handleDeleteClick = () => {
@@ -216,20 +273,8 @@ const ProxyCard: React.FC<ProxyCardProps> = ({
         </div>
       )}
 
-      {/* Failure simulation indicator */}
-      {proxy.failure_config && (
-        proxy.failure_config.timeout_enabled ||
-        proxy.failure_config.error_injection_enabled ||
-        proxy.failure_config.ip_filtering_enabled ||
-        proxy.failure_config.rate_limiting_enabled
-      ) && (
-        <div className="mt-3 flex items-center space-x-2 p-2 bg-yellow-50 border border-yellow-200 rounded-md">
-          <ExclamationTriangleIcon className="h-4 w-4 text-yellow-600" />
-          <span className="text-xs text-yellow-700 font-medium">
-            Failure simulation active
-          </span>
-        </div>
-      )}
+      {/* Feature indicators - Always show */}
+      {renderFeatureIndicators()}
     </div>
   );
 };

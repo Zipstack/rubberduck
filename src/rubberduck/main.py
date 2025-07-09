@@ -248,28 +248,9 @@ async def startup_event():
     
     db = SessionLocal()
     try:
-        # Check if any users exist, if not create default user
+        # Check user count for informational purposes
         user_count = db.query(User).count()
-        if user_count == 0:
-            logger.info("No users found in database, creating default user")
-            try:
-                from .auth import user_manager
-                from .models.schemas import UserCreate
-                
-                # Create default user
-                default_user_data = UserCreate(
-                    email="admin@rubberduck.local",
-                    password="admin"
-                )
-                
-                # Use the user manager to create the user properly
-                default_user = await user_manager.create(default_user_data, safe=False)
-                logger.info(f"Created default user: {default_user.email}")
-                
-            except Exception as e:
-                logger.error(f"Failed to create default user: {str(e)}")
-        else:
-            logger.info(f"Found {user_count} existing users in database")
+        logger.info(f"Found {user_count} users in database")
         
         # Query database for proxies that were left in running state
         running_proxies = db.query(Proxy).filter(Proxy.status == "running").all()
@@ -345,7 +326,7 @@ app.add_middleware(
         "http://127.0.0.1:3000",
     ],
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 
@@ -1172,6 +1153,54 @@ async def purge_logs(
         "message": f"Successfully purged {count} log entries",
         "deleted_count": count
     }
+
+@app.patch("/auth/change-password")
+async def change_user_password(
+    password_data: dict,
+    user: User = Depends(current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Change user password with current password verification."""
+    try:
+        current_password = password_data.get("current_password")
+        new_password = password_data.get("password")
+        
+        if not current_password or not new_password:
+            raise HTTPException(status_code=422, detail="Current password and new password are required")
+        
+        # Import password context
+        from passlib.context import CryptContext
+        pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto", bcrypt__rounds=12)
+        
+        # Verify current password
+        if not pwd_context.verify(current_password, user.hashed_password):
+            raise HTTPException(status_code=422, detail="Current password is incorrect")
+        
+        # Hash new password
+        new_hashed_password = pwd_context.hash(new_password)
+        
+        # Fetch the user from the current database session using the user ID
+        db_user = db.query(User).filter(User.id == user.id).first()
+        if not db_user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Update user password
+        db_user.hashed_password = new_hashed_password
+        db.commit()
+        db.refresh(db_user)
+        
+        return {
+            "id": user.id,
+            "email": user.email,
+            "is_active": user.is_active,
+            "is_verified": user.is_verified
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error changing password: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to change password")
 
 if __name__ == "__main__":
     import uvicorn
