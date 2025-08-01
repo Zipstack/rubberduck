@@ -75,9 +75,17 @@ class ConnectionManager:
             if log_entry.failure_type:
                 event = f"Failure: {log_entry.failure_type}"
                 status = "error"
+            elif log_entry.cache_hit and log_entry.response_delay_ms and log_entry.response_delay_ms > 0:
+                delay_seconds = log_entry.response_delay_ms / 1000
+                event = f"Cache hit (delayed {delay_seconds:.1f}s)"
+                status = "info"
             elif log_entry.cache_hit:
                 event = "Cache hit"
                 status = "success"
+            elif log_entry.response_delay_ms and log_entry.response_delay_ms > 0:
+                delay_seconds = log_entry.response_delay_ms / 1000
+                event = f"Response delayed {delay_seconds:.1f}s"
+                status = "info"
             elif log_entry.status_code >= 400:
                 event = f"Error {log_entry.status_code}"
                 status = "error"
@@ -472,9 +480,17 @@ async def get_recent_activity(
             if log.failure_type:
                 event = f"Failure: {log.failure_type}"
                 status = "error"
+            elif log.cache_hit and log.response_delay_ms and log.response_delay_ms > 0:
+                delay_seconds = log.response_delay_ms / 1000
+                event = f"Cache hit (delayed {delay_seconds:.1f}s)"
+                status = "info"
             elif log.cache_hit:
                 event = "Cache hit"
                 status = "success"
+            elif log.response_delay_ms and log.response_delay_ms > 0:
+                delay_seconds = log.response_delay_ms / 1000
+                event = f"Response delayed {delay_seconds:.1f}s"
+                status = "info"
             elif log.status_code >= 400:
                 event = f"Error {log.status_code}"
                 status = "error"
@@ -816,7 +832,11 @@ async def get_failure_config(
             "ip_allowlist": failure_config.ip_allowlist,
             "ip_blocklist": failure_config.ip_blocklist,
             "rate_limiting_enabled": failure_config.rate_limiting_enabled,
-            "requests_per_minute": failure_config.requests_per_minute
+            "requests_per_minute": failure_config.requests_per_minute,
+            "response_delay_enabled": failure_config.response_delay_enabled,
+            "response_delay_min_seconds": failure_config.response_delay_min_seconds,
+            "response_delay_max_seconds": failure_config.response_delay_max_seconds,
+            "response_delay_cache_only": failure_config.response_delay_cache_only
         }
     }
 
@@ -836,6 +856,18 @@ async def update_failure_config(
     
     if not proxy:
         raise HTTPException(status_code=404, detail="Proxy not found")
+    
+    # Validate response delay values if provided
+    if "response_delay_min_seconds" in config_data and "response_delay_max_seconds" in config_data:
+        min_delay = config_data["response_delay_min_seconds"]
+        max_delay = config_data["response_delay_max_seconds"]
+        
+        if min_delay < 0 or max_delay < 0:
+            raise HTTPException(status_code=400, detail="Response delay values must be non-negative")
+        if min_delay > max_delay:
+            raise HTTPException(status_code=400, detail="Response delay minimum must be less than or equal to maximum")
+        if max_delay > 30:  # Reasonable upper limit
+            raise HTTPException(status_code=400, detail="Response delay maximum cannot exceed 30 seconds")
     
     # Create failure config from provided data
     try:

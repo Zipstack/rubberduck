@@ -98,6 +98,13 @@ Access through the **"Actions"** menu → **"Failure Settings"**
 - Support for CIDR notation
 - Wildcard pattern matching
 
+**Response Delay:**
+- Simulate realistic LLM response times for cached responses
+- Configure minimum and maximum delay ranges (0-30 seconds)
+- Cache-only mode: Apply delays only to cache hits (recommended)
+- All-requests mode: Apply delays to both cached and non-cached responses
+- Non-blocking implementation maintains system performance
+
 ### Cache Management
 
 **Cache Settings:**
