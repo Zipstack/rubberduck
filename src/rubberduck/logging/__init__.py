@@ -141,7 +141,8 @@ async def log_proxy_request(
     start_time: float,
     cache_hit: bool = False,
     failure_type: Optional[str] = None,
-    request_data: Optional[dict] = None
+    request_data: Optional[dict] = None,
+    response_delay_ms: Optional[float] = None
 ):
     """
     Convenience function to log proxy requests.
@@ -154,6 +155,7 @@ async def log_proxy_request(
         cache_hit: Whether this was a cache hit
         failure_type: Type of simulated failure (if any)
         request_data: Request data for hash generation
+        response_delay_ms: Applied response delay in milliseconds
     """
     # Calculate latency
     end_time = time.time()
@@ -183,6 +185,7 @@ async def log_proxy_request(
             cache_hit=cache_hit,
             prompt_hash=prompt_hash,
             failure_type=failure_type,
+            response_delay_ms=response_delay_ms,
             timestamp=datetime.utcnow()
         )
         

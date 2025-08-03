@@ -15,15 +15,19 @@ const ProxyDesigns: React.FC = () => {
     user_id: "user123",
     failure_config: {
       timeout_enabled: true,
+      timeout_seconds: 5.0,
+      timeout_rate: 0.0,
       error_injection_enabled: false,
+      error_rates: {},
       ip_filtering_enabled: false,
+      ip_allowlist: [],
+      ip_blocklist: [],
       rate_limiting_enabled: false,
-      timeout_duration: 5000,
-      error_injection_rate: 0,
-      allowed_ips: [],
-      blocked_ips: [],
-      rate_limit_requests: 0,
-      rate_limit_window: 0
+      requests_per_minute: 60,
+      response_delay_enabled: false,
+      response_delay_min_seconds: 0.5,
+      response_delay_max_seconds: 2.0,
+      response_delay_cache_only: true,
     }
   };
 

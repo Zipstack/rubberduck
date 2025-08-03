@@ -251,6 +251,14 @@ class ProxyManager:
                     # No error injection, proceed with cache hit response
                     cache_hit = True
                     
+                    # Apply response delay if configured
+                    delay_applied = 0.0
+                    if failure_config:
+                        delay_applied = await failure_simulator.apply_response_delay(
+                            config=failure_config,
+                            is_cache_hit=cache_hit
+                        )
+                    
                     # Filter out problematic headers from cached response too
                     cached_headers = cached_response.get("headers", {})
                     headers_to_filter = {
@@ -270,6 +278,8 @@ class ProxyManager:
                     # Add cache-specific headers
                     clean_headers["X-Cache"] = "HIT"
                     clean_headers["X-Cache-Timestamp"] = cached_response.get("cache_timestamp", "")
+                    if delay_applied > 0:
+                        clean_headers["X-Response-Delay-Ms"] = str(int(delay_applied * 1000))
                     
                     response = JSONResponse(
                         content=cached_response.get("data", {}),
@@ -285,7 +295,8 @@ class ProxyManager:
                         start_time=start_time,
                         cache_hit=cache_hit,
                         failure_type=None,
-                        request_data=request_data
+                        request_data=request_data,
+                        response_delay_ms=delay_applied * 1000 if delay_applied > 0 else None
                     )
                     
                     return response
@@ -335,9 +346,19 @@ class ProxyManager:
                     if key.lower() not in headers_to_filter:
                         response_headers[key] = value
                 
+                # Apply response delay if configured (for non-cache hits)
+                delay_applied = 0.0
+                if failure_config:
+                    delay_applied = await failure_simulator.apply_response_delay(
+                        config=failure_config,
+                        is_cache_hit=False
+                    )
+                
                 # Add our own cache status
                 if cache_key:
                     response_headers["X-Cache"] = "MISS"
+                if delay_applied > 0:
+                    response_headers["X-Response-Delay-Ms"] = str(int(delay_applied * 1000))
                 
                 response = JSONResponse(
                     content=response_data.get("data", {}),
@@ -353,7 +374,8 @@ class ProxyManager:
                     start_time=start_time,
                     cache_hit=False,
                     failure_type=None,
-                    request_data=request_data
+                    request_data=request_data,
+                    response_delay_ms=delay_applied * 1000 if delay_applied > 0 else None
                 )
                 
                 return response

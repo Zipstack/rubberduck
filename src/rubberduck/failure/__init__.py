@@ -2,6 +2,7 @@ import json
 import random
 import asyncio
 import ipaddress
+import time
 from typing import Dict, Any, Optional, List, Union
 from dataclasses import dataclass
 from fastapi import HTTPException, Request
@@ -28,6 +29,12 @@ class FailureConfig:
     rate_limiting_enabled: bool = False
     requests_per_minute: int = 60
     
+    # Response delay configuration
+    response_delay_enabled: bool = False
+    response_delay_min_seconds: float = 0.5  # Minimum delay in seconds
+    response_delay_max_seconds: float = 2.0  # Maximum delay in seconds
+    response_delay_cache_only: bool = True  # Apply delay only to cache hits
+    
     def __post_init__(self):
         if self.error_rates is None:
             self.error_rates = {}
@@ -47,6 +54,13 @@ class FailureConfig:
             # Convert error_rates keys back to integers (JSON serializes int keys as strings)
             if 'error_rates' in data and data['error_rates']:
                 data['error_rates'] = {int(k): v for k, v in data['error_rates'].items()}
+            
+            # Ensure new fields have defaults if missing (for backward compatibility)
+            data.setdefault('response_delay_enabled', False)
+            data.setdefault('response_delay_min_seconds', 0.5)
+            data.setdefault('response_delay_max_seconds', 2.0)
+            data.setdefault('response_delay_cache_only', True)
+            
             return cls(**data)
         except (json.JSONDecodeError, TypeError) as e:
             print(f"Error parsing failure config: {e}")
@@ -64,7 +78,11 @@ class FailureConfig:
             "ip_allowlist": self.ip_allowlist,
             "ip_blocklist": self.ip_blocklist,
             "rate_limiting_enabled": self.rate_limiting_enabled,
-            "requests_per_minute": self.requests_per_minute
+            "requests_per_minute": self.requests_per_minute,
+            "response_delay_enabled": self.response_delay_enabled,
+            "response_delay_min_seconds": self.response_delay_min_seconds,
+            "response_delay_max_seconds": self.response_delay_max_seconds,
+            "response_delay_cache_only": self.response_delay_cache_only
         })
 
 
@@ -206,6 +224,48 @@ class FailureSimulator:
         
         return None
     
+    async def apply_response_delay(
+        self, 
+        config: FailureConfig, 
+        is_cache_hit: bool
+    ) -> float:
+        """
+        Apply response delay to simulate realistic LLM response times.
+        
+        This helps prevent instant cache responses that could reveal caching to clients.
+        The delay is applied using asyncio.sleep() for non-blocking behavior.
+        
+        Args:
+            config: Failure configuration with delay settings
+            is_cache_hit: Whether this is a cache hit
+            
+        Returns:
+            The actual delay applied in seconds (0.0 if no delay)
+        """
+        # Skip delay if feature is disabled
+        if not config.response_delay_enabled:
+            return 0.0
+        
+        # Check if delay should be applied based on cache-only setting
+        # When cache_only=True, only cache hits get delayed
+        # When cache_only=False, all requests get delayed
+        if config.response_delay_cache_only and not is_cache_hit:
+            return 0.0
+        
+        # Generate random delay within configured range using uniform distribution
+        # This simulates the natural variation in LLM response times
+        delay = random.uniform(
+            config.response_delay_min_seconds,
+            config.response_delay_max_seconds
+        )
+        
+        # Apply delay using asyncio.sleep (non-blocking, allows other requests to proceed)
+        start_time = time.perf_counter()
+        await asyncio.sleep(delay)
+        actual_delay = time.perf_counter() - start_time
+        
+        return actual_delay
+    
     async def process_request(
         self, 
         config: FailureConfig, 
@@ -275,5 +335,9 @@ def create_default_failure_config() -> FailureConfig:
         ip_allowlist=[],
         ip_blocklist=[],
         rate_limiting_enabled=False,
-        requests_per_minute=60
+        requests_per_minute=60,
+        response_delay_enabled=False,
+        response_delay_min_seconds=0.5,
+        response_delay_max_seconds=2.0,
+        response_delay_cache_only=True
     )

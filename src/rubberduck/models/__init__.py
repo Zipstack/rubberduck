@@ -74,6 +74,7 @@ class LogEntry(Base):
     cache_hit = Column(Boolean, default=False)
     prompt_hash = Column(String, nullable=True)
     failure_type = Column(String, nullable=True)  # timeout, error_injection, etc.
+    response_delay_ms = Column(Float, nullable=True)  # applied response delay in milliseconds
     token_usage = Column(Integer, nullable=True)
     cost = Column(Float, nullable=True)
 
