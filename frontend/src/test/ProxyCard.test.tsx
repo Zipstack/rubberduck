@@ -94,6 +94,10 @@ describe('ProxyCard', () => {
         ip_blocklist: [],
         rate_limiting_enabled: false,
         requests_per_minute: 60,
+        response_delay_enabled: false,
+        response_delay_min_seconds: 0.5,
+        response_delay_max_seconds: 2.0,
+        response_delay_cache_only: true,
       },
     };
     

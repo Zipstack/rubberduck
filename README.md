@@ -31,6 +31,7 @@ Rubberduck provides caching, failure simulation, rate limiting, per-user proxy i
 - **Error Injection**: Configurable HTTP error codes (429, 500, 400) with individual rates
 - **IP Filtering**: Allow/block lists with CIDR and wildcard support
 - **Rate Limiting**: Requests per minute with realistic LLM behavior
+- **Response Delay**: Simulate realistic LLM response times for cached responses (configurable 0-30s range)
 
 ### 📊 **Comprehensive Monitoring**
 - Real-time request logging with metadata

@@ -1,20 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { apiClient, ApiError } from '../utils/api';
-import type { Proxy } from '../types';
-
-interface FailureConfig {
-  timeout_enabled: boolean;
-  timeout_seconds?: number;
-  timeout_rate: number;
-  error_injection_enabled: boolean;
-  error_rates: Record<number, number>;
-  ip_filtering_enabled: boolean;
-  ip_allowlist: string[];
-  ip_blocklist: string[];
-  rate_limiting_enabled: boolean;
-  requests_per_minute: number;
-}
+import type { Proxy, FailureConfig } from '../types';
 
 interface ProxyConfigModalProps {
   proxy: Proxy;
@@ -45,6 +32,10 @@ const ProxyConfigModal: React.FC<ProxyConfigModalProps> = ({
     ip_blocklist: [],
     rate_limiting_enabled: false,
     requests_per_minute: 60,
+    response_delay_enabled: false,
+    response_delay_min_seconds: 0.5,
+    response_delay_max_seconds: 2.0,
+    response_delay_cache_only: true,
   });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -91,6 +82,13 @@ const ProxyConfigModal: React.FC<ProxyConfigModalProps> = ({
   };
 
   const handleSave = async () => {
+    // Validate response delay configuration
+    const validationError = validateResponseDelay();
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
     setIsSaving(true);
     setError(null);
     try {
@@ -143,6 +141,21 @@ const ProxyConfigModal: React.FC<ProxyConfigModalProps> = ({
       ...prev,
       [`ip_${type}`]: ips,
     }));
+  };
+
+  const validateResponseDelay = () => {
+    if (config.response_delay_enabled) {
+      if (config.response_delay_min_seconds < 0 || config.response_delay_max_seconds < 0) {
+        return "Response delay values must be non-negative";
+      }
+      if (config.response_delay_min_seconds > config.response_delay_max_seconds) {
+        return "Minimum delay must be less than or equal to maximum delay";
+      }
+      if (config.response_delay_max_seconds > 30) {
+        return "Maximum delay cannot exceed 30 seconds";
+      }
+    }
+    return null;
   };
 
   if (!isOpen) return null;
@@ -357,6 +370,88 @@ const ProxyConfigModal: React.FC<ProxyConfigModalProps> = ({
                           className="input-field"
                           placeholder="192.168.100.0/24&#10;1.2.3.4"
                         />
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Response Delay */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium text-gray-900">Response Delay</h3>
+                <div className="space-y-3">
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={config.response_delay_enabled}
+                      onChange={(e) =>
+                        setConfig(prev => ({ ...prev, response_delay_enabled: e.target.checked }))
+                      }
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    <span className="ml-2 text-sm text-gray-700">Enable response delay</span>
+                  </label>
+                  
+                  <div className="text-xs text-gray-500">
+                    Simulates realistic LLM response times to prevent instant cache responses
+                  </div>
+
+                  {config.response_delay_enabled && (
+                    <>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Minimum delay (seconds)
+                        </label>
+                        <input
+                          type="number"
+                          min="0"
+                          max="30"
+                          step="0.1"
+                          value={config.response_delay_min_seconds}
+                          onChange={(e) =>
+                            setConfig(prev => ({ 
+                              ...prev, 
+                              response_delay_min_seconds: parseFloat(e.target.value) || 0 
+                            }))
+                          }
+                          className="input-field"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Maximum delay (seconds)
+                        </label>
+                        <input
+                          type="number"
+                          min="0"
+                          max="30"
+                          step="0.1"
+                          value={config.response_delay_max_seconds}
+                          onChange={(e) =>
+                            setConfig(prev => ({ 
+                              ...prev, 
+                              response_delay_max_seconds: parseFloat(e.target.value) || 0 
+                            }))
+                          }
+                          className="input-field"
+                        />
+                      </div>
+
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={config.response_delay_cache_only}
+                          onChange={(e) =>
+                            setConfig(prev => ({ ...prev, response_delay_cache_only: e.target.checked }))
+                          }
+                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        />
+                        <span className="ml-2 text-sm text-gray-700">Apply to cache hits only</span>
+                      </label>
+                      
+                      <div className="text-xs text-gray-500">
+                        Default range: 0.5-2.0 seconds (typical LLM response times)
                       </div>
                     </>
                   )}

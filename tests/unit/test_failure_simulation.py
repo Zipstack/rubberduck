@@ -1,7 +1,7 @@
 import pytest
 import time
 import asyncio
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 from fastapi import Request, HTTPException
 from rubberduck.failure import FailureConfig, FailureSimulator, create_default_failure_config
 
@@ -22,6 +22,11 @@ class TestFailureConfig:
         assert config.ip_blocklist == []
         assert config.rate_limiting_enabled is False
         assert config.requests_per_minute == 60
+        # Test response delay defaults
+        assert config.response_delay_enabled is False
+        assert config.response_delay_min_seconds == 0.5
+        assert config.response_delay_max_seconds == 2.0
+        assert config.response_delay_cache_only is True
     
     def test_json_serialization(self):
         """Test JSON serialization and deserialization."""
@@ -35,7 +40,11 @@ class TestFailureConfig:
             ip_allowlist=["192.168.1.0/24"],
             ip_blocklist=["10.0.0.1"],
             rate_limiting_enabled=True,
-            requests_per_minute=30
+            requests_per_minute=30,
+            response_delay_enabled=True,
+            response_delay_min_seconds=1.0,
+            response_delay_max_seconds=3.0,
+            response_delay_cache_only=False
         )
         
         # Serialize to JSON
@@ -54,6 +63,11 @@ class TestFailureConfig:
         assert restored_config.ip_blocklist == config.ip_blocklist
         assert restored_config.rate_limiting_enabled == config.rate_limiting_enabled
         assert restored_config.requests_per_minute == config.requests_per_minute
+        # Test response delay serialization
+        assert restored_config.response_delay_enabled == config.response_delay_enabled
+        assert restored_config.response_delay_min_seconds == config.response_delay_min_seconds
+        assert restored_config.response_delay_max_seconds == config.response_delay_max_seconds
+        assert restored_config.response_delay_cache_only == config.response_delay_cache_only
     
     def test_json_deserialization_invalid(self):
         """Test handling of invalid JSON."""
@@ -368,6 +382,247 @@ class TestFailureSimulator:
         
         # Should use default IP (127.0.0.1) and pass
         assert error is None
+
+
+class TestResponseDelay:
+    """Test response delay functionality."""
+    
+    def setup_method(self):
+        """Set up test fixtures."""
+        self.simulator = FailureSimulator()
+    
+    @pytest.mark.asyncio
+    async def test_response_delay_disabled(self):
+        """Test that no delay occurs when disabled."""
+        config = FailureConfig(
+            response_delay_enabled=False,
+            response_delay_min_seconds=1.0,
+            response_delay_max_seconds=2.0
+        )
+        
+        with patch('asyncio.sleep') as mock_sleep:
+            delay = await self.simulator.apply_response_delay(config, is_cache_hit=True)
+            
+            # Should return immediately without calling sleep
+            assert delay == 0.0
+            mock_sleep.assert_not_called()
+    
+    @pytest.mark.asyncio
+    async def test_response_delay_cache_only_cache_hit(self):
+        """Test response delay when cache_only=True and is_cache_hit=True."""
+        config = FailureConfig(
+            response_delay_enabled=True,
+            response_delay_min_seconds=0.1,
+            response_delay_max_seconds=0.2,
+            response_delay_cache_only=True
+        )
+        
+        with patch('asyncio.sleep') as mock_sleep, \
+             patch('time.perf_counter', side_effect=[0.0, 0.15]):  # Mock timing
+            delay = await self.simulator.apply_response_delay(config, is_cache_hit=True)
+            
+            # Should call sleep with delay in range
+            mock_sleep.assert_called_once()
+            sleep_arg = mock_sleep.call_args[0][0]
+            assert 0.1 <= sleep_arg <= 0.2
+            
+            # Should return the mocked elapsed time
+            assert delay == 0.15
+    
+    @pytest.mark.asyncio
+    async def test_response_delay_cache_only_cache_miss(self):
+        """Test response delay when cache_only=True and is_cache_hit=False."""
+        config = FailureConfig(
+            response_delay_enabled=True,
+            response_delay_min_seconds=0.1,
+            response_delay_max_seconds=0.2,
+            response_delay_cache_only=True
+        )
+        
+        with patch('asyncio.sleep') as mock_sleep:
+            delay = await self.simulator.apply_response_delay(config, is_cache_hit=False)
+            
+            # Should not apply delay for cache miss
+            assert delay == 0.0
+            mock_sleep.assert_not_called()
+    
+    @pytest.mark.asyncio
+    async def test_response_delay_all_requests_cache_hit(self):
+        """Test response delay when cache_only=False and is_cache_hit=True."""
+        config = FailureConfig(
+            response_delay_enabled=True,
+            response_delay_min_seconds=0.1,
+            response_delay_max_seconds=0.2,
+            response_delay_cache_only=False
+        )
+        
+        with patch('asyncio.sleep') as mock_sleep, \
+             patch('time.perf_counter', side_effect=[0.0, 0.13]):
+            delay = await self.simulator.apply_response_delay(config, is_cache_hit=True)
+            
+            # Should call sleep with delay in range
+            mock_sleep.assert_called_once()
+            sleep_arg = mock_sleep.call_args[0][0]
+            assert 0.1 <= sleep_arg <= 0.2
+            
+            # Should return the mocked elapsed time
+            assert delay == 0.13
+    
+    @pytest.mark.asyncio
+    async def test_response_delay_all_requests_cache_miss(self):
+        """Test response delay when cache_only=False and is_cache_hit=False."""
+        config = FailureConfig(
+            response_delay_enabled=True,
+            response_delay_min_seconds=0.1,
+            response_delay_max_seconds=0.2,
+            response_delay_cache_only=False
+        )
+        
+        with patch('asyncio.sleep') as mock_sleep, \
+             patch('time.perf_counter', side_effect=[0.0, 0.18]):
+            delay = await self.simulator.apply_response_delay(config, is_cache_hit=False)
+            
+            # Should apply delay even for cache miss
+            mock_sleep.assert_called_once()
+            sleep_arg = mock_sleep.call_args[0][0]
+            assert 0.1 <= sleep_arg <= 0.2
+            
+            # Should return the mocked elapsed time
+            assert delay == 0.18
+    
+    @pytest.mark.asyncio
+    async def test_response_delay_fixed_duration(self):
+        """Test response delay with min==max (fixed duration)."""
+        config = FailureConfig(
+            response_delay_enabled=True,
+            response_delay_min_seconds=0.15,
+            response_delay_max_seconds=0.15,  # Same as min
+            response_delay_cache_only=False
+        )
+        
+        with patch('asyncio.sleep') as mock_sleep, \
+             patch('time.perf_counter', side_effect=[0.0, 0.15]):
+            delay = await self.simulator.apply_response_delay(config, is_cache_hit=True)
+            
+            # Should call sleep with exact delay value
+            mock_sleep.assert_called_once_with(0.15)
+            
+            # Should return the mocked elapsed time
+            assert delay == 0.15
+    
+    @pytest.mark.asyncio
+    async def test_response_delay_range_distribution(self):
+        """Test that delays fall within the specified range."""
+        config = FailureConfig(
+            response_delay_enabled=True,
+            response_delay_min_seconds=0.05,
+            response_delay_max_seconds=0.15,
+            response_delay_cache_only=False
+        )
+        
+        with patch('asyncio.sleep') as mock_sleep:
+            # Test multiple calls to ensure randomness
+            delays = []
+            for _ in range(10):
+                await self.simulator.apply_response_delay(config, is_cache_hit=True)
+                # Get the sleep argument from the most recent call
+                sleep_arg = mock_sleep.call_args[0][0]
+                delays.append(sleep_arg)
+        
+        # All generated delays should be within range
+        for delay in delays:
+            assert 0.05 <= delay <= 0.15
+        
+        # Should have some variation (not all the same)
+        unique_delays = set(delays)
+        assert len(unique_delays) > 1  # Should have at least some variation
+    
+    @pytest.mark.asyncio
+    async def test_response_delay_zero_duration(self):
+        """Test response delay with zero duration."""
+        config = FailureConfig(
+            response_delay_enabled=True,
+            response_delay_min_seconds=0.0,
+            response_delay_max_seconds=0.0,
+            response_delay_cache_only=False
+        )
+        
+        with patch('asyncio.sleep') as mock_sleep, \
+             patch('time.perf_counter', side_effect=[0.0, 0.0]):
+            delay = await self.simulator.apply_response_delay(config, is_cache_hit=True)
+            
+            # Should call sleep with 0.0
+            mock_sleep.assert_called_once_with(0.0)
+            
+            # Should return 0.0 delay
+            assert delay == 0.0
+
+
+class TestResponseDelayIntegration:
+    """Integration tests for response delay with other failure simulation features."""
+    
+    def setup_method(self):
+        """Set up test fixtures."""
+        self.simulator = FailureSimulator()
+    
+    @pytest.mark.asyncio
+    async def test_response_delay_with_error_injection(self):
+        """Test response delay works independently of error injection."""
+        config = FailureConfig(
+            response_delay_enabled=True,
+            response_delay_min_seconds=0.1,
+            response_delay_max_seconds=0.1,
+            response_delay_cache_only=False,
+            error_injection_enabled=True,
+            error_rates={500: 0.0}  # No errors, just delay
+        )
+        
+        with patch('asyncio.sleep') as mock_sleep, \
+             patch('time.perf_counter', side_effect=[0.0, 0.1]):
+            delay = await self.simulator.apply_response_delay(config, is_cache_hit=False)
+            
+            # Should call sleep with exact delay value
+            mock_sleep.assert_called_once_with(0.1)
+            
+            # Should return the mocked elapsed time
+            assert delay == 0.1
+    
+    @pytest.mark.asyncio
+    async def test_process_request_with_all_features_enabled(self):
+        """Test full request processing with all features including response delay."""
+        config = FailureConfig(
+            ip_filtering_enabled=True,
+            ip_allowlist=["127.0.0.1"],
+            rate_limiting_enabled=True,
+            requests_per_minute=10,
+            timeout_enabled=False,
+            error_injection_enabled=False,
+            response_delay_enabled=True,
+            response_delay_min_seconds=0.05,
+            response_delay_max_seconds=0.1,
+            response_delay_cache_only=False
+        )
+        
+        # Mock request
+        request = MagicMock()
+        request.client.host = "127.0.0.1"
+        
+        # Process request (should pass all checks)
+        error = await self.simulator.process_request(config, 1, request)
+        assert error is None
+        
+        # Test delay functionality separately
+        with patch('asyncio.sleep') as mock_sleep, \
+             patch('time.perf_counter', side_effect=[0.0, 0.08]):
+            delay = await self.simulator.apply_response_delay(config, is_cache_hit=True)
+            
+            # Should call sleep with delay in range
+            mock_sleep.assert_called_once()
+            sleep_arg = mock_sleep.call_args[0][0]
+            assert 0.05 <= sleep_arg <= 0.1
+            
+            # Should return the mocked elapsed time
+            assert delay == 0.08
 
 
 if __name__ == "__main__":

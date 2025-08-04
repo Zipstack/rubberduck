@@ -28,6 +28,10 @@ export interface FailureConfig {
   ip_blocklist: string[];
   rate_limiting_enabled: boolean;
   requests_per_minute: number;
+  response_delay_enabled: boolean;
+  response_delay_min_seconds: number;
+  response_delay_max_seconds: number;
+  response_delay_cache_only: boolean;
 }
 
 export interface LogEntry {
@@ -42,6 +46,7 @@ export interface LogEntry {
   token_usage?: number;
   cost?: number;
   failure_type?: string;
+  response_delay_ms?: number;
 }
 
 export interface DashboardStats {

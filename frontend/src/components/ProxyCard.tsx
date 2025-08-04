@@ -12,6 +12,7 @@ import {
   ClockIcon,
   ShieldCheckIcon,
   NoSymbolIcon,
+  ArrowPathIcon,
 } from '@heroicons/react/24/outline';
 import type { Proxy } from '../types';
 
@@ -88,6 +89,11 @@ const ProxyCard: React.FC<ProxyCardProps> = ({
         icon: ShieldCheckIcon,
         label: 'IP Filtering',
         enabled: proxy.failure_config?.ip_filtering_enabled || false,
+      },
+      {
+        icon: ArrowPathIcon,
+        label: 'Response Delay',
+        enabled: proxy.failure_config?.response_delay_enabled || false,
       },
     ];
 
