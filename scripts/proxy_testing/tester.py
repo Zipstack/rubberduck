@@ -715,12 +715,18 @@ def main(
     api_key: Optional[str] = typer.Option(None, "-k", "--api-key", help="API key"),
     proxy_url: Optional[str] = typer.Option(None, "-u", "--proxy-url", help="Proxy URL (if not specified, connects directly to provider)"),
     timeout: int = typer.Option(30, "-t", "--timeout", help="Request timeout in seconds"),
-    models_file: str = typer.Option("./models.json", "--models-file", help="Models configuration file")
+    models_file: str = typer.Option("./models.json", "--models-file", help="Models configuration file"),
+    seed: Optional[int] = typer.Option(None, "--seed", help="Random seed for reproducible test runs")
 ):
     """LLM Proxy Load-Test Script
     
     By default, connects directly to provider APIs. 
     Use --proxy-url to test through a proxy server."""
+    
+    # Set random seed if provided for reproducibility
+    if seed is not None:
+        random.seed(seed)
+        console.print(f"[green]Using random seed: {seed}[/green]")
     
     # Determine if we're in interactive mode
     if interactive is None:
